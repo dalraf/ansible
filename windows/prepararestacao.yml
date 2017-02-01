@@ -1,0 +1,82 @@
+- hosts: windows
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: true
+  vars:
+    powercommands: ["-monitor-timeout-ac 0", "-monitor-timeout-dc 0", "-disk-timeout-ac 0", "-disk-timeout-dc 0" , "-standby-timeout-ac 0" , "-standby-timeout-dc 0", "-hibernate-timeout-ac 0" , "-hibernate-timeout-dc 0" ]
+    usuariosremover: ["cobaia", "windowspadrao"]
+    pacoteswindows: ["googlechrome","firefox","javaruntime-platformspecific","adobeair", "rsync"]
+  tasks:
+    - name: Adicionad no domínio
+      script: addtodomain.ps1
+
+    - name: Cria diretorio de softwares
+      win_file: path=C:\utils state=directory
+      tags:
+        - vnc
+        - chocolatey
+
+    - name: Cria diretorio de chocolatey
+      win_file: path=C:\utils\choco state=directory
+      tags:
+        - chocolatey
+
+    - name: Copia configuração do chocolatey
+      win_copy: src=chocolatey.config dest=c:/ProgramData/chocolatey/config/chocolatey.config
+      tags:
+        - chocolatey
+
+    - name: Instala pacotes
+      win_chocolatey: name={{item}}
+      with_items: "{{pacoteswindows}}"
+      tags:
+        - instalar
+
+    - name: Remove usuarios
+      win_user: name={{item}} state=absent
+      with_items: "{{usuariosremover}}"
+      tags:
+        - removeusuarios
+
+    - name: Download tightvnc x64
+      win_get_url:
+        url: 'http://www.tightvnc.com/download/2.7.10/tightvnc-2.7.10-setup-64bit.msi'
+        dest: 'C:\utils\tightvnc.msi'
+        force: no
+      when: ansible_architecture=="64-bit"
+      tags:
+        - vnc
+
+    - name: Download tightvnc x32
+      win_get_url:
+        url: 'http://www.tightvnc.com/download/2.7.10/tightvnc-2.7.10-setup-32bit.msi'
+        dest: 'C:\utils\tightvnc.msi'
+        force: no
+      when: ansible_architecture=="32-bit"
+      tags:
+        - vnc
+
+
+    - name: Instala vnc
+      raw: 'msiexec.exe /i C:\utils\tightvnc.msi /quiet /norestart VIEWER_ASSOCIATE_VNC_EXTENSION=1 SERVER_REGISTER_AS_SERVICE=1 SERVER_ADD_FIREWALL_EXCEPTION=1 VIEWER_ADD_FIREWALL_EXCEPTION=1 SERVER_ALLOW_SAS=1 SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=1234 SET_USECONTROLAUTHENTICATION=1 VALUE_OF_USECONTROLAUTHENTICATION=1 SET_CONTROLPASSWORD=1 VALUE_OF_CONTROLPASSWORD=1974'
+      tags:
+        - vnc
+
+    - name: Desativa Hibernate mode
+      raw: powercfg.exe -h off 
+      tags:
+        - power
+
+    - name: Desativa sleep mode dc
+      raw: powercfg.exe -x {{ item }} 
+      with_items: "{{powercommands}}"
+      tags:
+        - power
+
+    - name: Reinicia cpu
+      raw: shutdown /t 0 /r
+      tags:
+        - reiniciar
+
+

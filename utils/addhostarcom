@@ -1,0 +1,4 @@
+#!/bin/bash
+[ -z "$*" ] && echo "addhostnomeclient nome ip descricao servicenomeclient(true|false)" && exit 0
+ansible-playbook  -i /nomeclient/ansible/hosts /nomeclient/ansible/utils/addhostnomeclient.yml -e name=${1} -e ipaddress=${2} -e descricao="${3}" -e servicenomeclient=${4}
+

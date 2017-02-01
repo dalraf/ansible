@@ -1,0 +1,36 @@
+- hosts: srv-nomeclient
+  strategy: free
+  gather_facts: true
+  tags:
+    - dockernginx
+  tasks:
+    - name: Instalar python pip
+      apt: name=python-pip
+
+    - name: Instalar docker-py
+      pip: name=docker-py
+
+    - name: Checar se docker está instalado
+      command: dpkg-query -l docker-engine
+      register: dockerpkg
+      failed_when: dockerpkg.rc > 1
+
+    - name: Instalar docker
+      shell: curl -sSL https://get.docker.com/ | sh chdir=/etc
+      when: dockerpkg.rc == 1
+      
+    - name: Removendo container se existir
+      docker_container:
+        name: wpadswebserver
+        state: absent
+
+    - name: Subindo container wpadwebserver
+      docker_container:
+        name: wpadswebserver
+        image: nginx 
+        state: started
+        restart: yes
+        ports:
+          - "80:80"
+
+

@@ -1,0 +1,75 @@
+- name: Instalar pacotes samba
+  apt: name={{ item }} state=present
+  with_items: "{{packagessamba}}"
+
+- name: Instalar bind9
+  apt: name=bind9 state=present
+  when: usebindredirect
+
+
+- name: Verificar status do serviço smbd
+  service: name=smbd state=started enabled=yes
+
+- name: Verificar status do serviço nmbd
+  service: name=nmbd state=started enabled=yes
+
+- name: Verificar status do serviço winbind
+  service: name=winbind state=started enabled=yes
+
+- name: Instalar arquivo /etc/hosts
+  template: src=hosts.j2 dest=/etc/hosts mode=0644 owner=root group=root
+
+- name: Instalar arquivo /etc/krb5.conf
+  template: src=krb5.conf.j2 dest=/etc/krb5.conf mode=0644 owner=root group=root
+
+- name: Instalar arquivo /etc/samba/smb.conf
+  template: src=smb.conf.j2 dest=/etc/samba/smb.conf mode=0644 owner=root group=root
+
+- name: Copia arquivo /etc/nsswitch.conf
+  copy: dest=/etc/nsswitch.conf src=nsswitch.conf mode=0644 owner=root group=root
+
+- name: Adicionar redirecionamento de domínio
+  blockinfile:
+    state: present
+    dest: /etc/bind/named.conf.local
+    marker: "// {mark} Redirecionamento de domínio"
+    block: |
+      zone {{ dominio }} {
+      type forward;
+      forwarders {
+      {{ ipservidordc }};
+      };
+      forward only;
+      };
+
+      zone {{ enderecoreverson }}.in-addr.arpa {
+      type forward;
+      forwarders {
+      {{ ipservidordc }};
+      };
+      forward only;
+      };
+
+  notify: 
+      - bind9 
+  when: usebindredirect
+
+
+- name: Desativar dnssec no bind9
+  lineinfile: dest=/etc/bind/named.conf.options regexp="dnssec-validation" line="\tdnssec-validation no;" state=present
+  notify: 
+      - bind9 
+  when: usebindredirect
+
+- name: Verificar se fstab já foi alterado
+  shell: grep "errors=remount-ro,acl,user_xattr,usrquota,grpquota" /etc/fstab  chdir=/etc
+  register: fstabchange
+  ignore_errors: yes
+  tags:
+    - fstab
+
+- name: Alterar /etc/fstab
+  shell:  sed -i 's/errors=remount-ro/errors=remount-ro,acl,user_xattr,usrquota,grpquota/' /etc/fstab  && /bin/mount -o remount /  chdir=/etc
+  when: fstabchange.rc != 0
+  tags:
+    - fstab

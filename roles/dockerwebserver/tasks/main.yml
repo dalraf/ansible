@@ -1,0 +1,23 @@
+- name: Removendo container se existir
+  docker_container:
+    name: webserver
+    state: absent
+
+- name: Criar diretorio nomeclientutils/html 
+  file: path=/nomeclientutils/html state=directory mode=0755 owner=root group=root
+
+- name: Subindo container webserver
+  docker_container:
+    name: webserver
+    image: nginx:mainline-alpine
+    interactive: yes
+    tty: yes
+    state: started
+    restart: yes
+    volumes:
+      - "/nomeclientutils/html:/usr/share/nginx/html:ro"
+    ports:
+      - "80:80"
+
+
+

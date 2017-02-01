@@ -1,0 +1,8 @@
+- hosts: backupnas
+  strategy: free
+  gather_facts: true
+  tags:
+    - backupnas
+  roles:
+    - backupnas
+    - nagios

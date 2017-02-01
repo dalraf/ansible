@@ -1,0 +1,8 @@
+- hosts: syncservers
+  strategy: free
+  gather_facts: false
+  tags:
+    - syncserver
+  roles:
+    - syncserver
+    - nagios

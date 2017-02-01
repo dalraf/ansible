@@ -1,0 +1,3 @@
+#!/bin/bash
+[ -z "$1" ] && echo "digite dominio drivevirtual arquivododisco" && exit
+virsh attach-disk $1 $3 $2  --type cdrom --mode readonly

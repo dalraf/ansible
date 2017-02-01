@@ -1,0 +1,69 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "hostdestino"
+    prompt: "Qual o host de destino?"
+    private: no
+  tasks:
+    - add_host:
+        name: "{{ hostdestino }}"
+        groups: hostdestino
+
+
+- hosts: hostdestino
+  strategy: free
+  gather_facts: yes
+  vars_prompt:
+    - name: "ansible_port"
+      prompt: "Qual a porta ssh?"
+      private: no
+    - name: "ansible_user"
+      prompt: "Qual o usuário de login? (Ex. nomeclient)"
+      private: no
+    - name: "ansible_ssh_pass"
+      prompt: "Qual a senha do usuario ?"
+      private: no
+    - name: "proxy"
+      prompt: "Qual o servidor proxy a ser usado ?"
+      private: no
+    - name: "interface"
+      prompt: "Qual a interface a ser configurada ?"
+      private: no
+    - name: "endereco"
+      prompt: "Qual o endereço ip a ser usado ?"
+      private: no
+    - name: "mascara"
+      prompt: "Qual a mascara a ser usada ?"
+      private: no
+    - name: "saida"
+      prompt: "Qual a gateway a ser usada ?"
+      private: no
+    - name: "servidordns"
+      prompt: "Qual o servidor de dns ?"
+      private: no
+    - name: "dnsprocura"
+      prompt: "Qual o dns search ?"
+      private: no
+  vars:
+    - ansible_become: yes
+    - ansible_become_user: root
+    - ansible_become_method: sudo
+    - ansible_become_pass: "{{ ansible_ssh_pass }}"
+    - ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q root@{{ proxy }}"' 
+  tags:
+    - network
+  roles:
+  - role: ansible-network-interfaces
+    network_manage_devices: yes
+    network_interfaces:
+    - device: "{{ interface }}"
+      auto: true
+      family: inet
+      method: static
+      address: "{{ endereco }}"
+      netmask: "{{ mascara }}"
+      gateway: "{{ saida }}"
+      dns_search: "{{ dnsprocura }}"
+      nameservers:
+        - "{{ servidordns }}"
+

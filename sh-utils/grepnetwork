@@ -1,0 +1,3 @@
+#!/bin/bash
+ngrep -q -d br0 -i  "(twitter|facebook)" "not port 3128"
+tcpdump -i br0 -A -s0 | egrep "facebook"

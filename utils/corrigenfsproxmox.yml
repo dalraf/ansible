@@ -1,0 +1,35 @@
+- hosts: proxmox
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Verifica se existe linha options vers=3
+      command: egrep "^.*options vers=3$" /etc/pve/storage.cfg
+      register: optionsexist
+      always_run: True
+      ignore_errors: True
+      changed_when: False
+      failed_when: ( optionsexist.rc not in [ 0, 1 ] )
+
+    - name: Copiar storage.cfg para tmp
+      shell: cp /etc/pve/storage.cfg /tmp/storage.cfg
+      when: optionsexist.rc == 0
+
+    - name: Alterar storage
+      lineinfile:  dest=/tmp/storage.cfg regexp="\toptions vers=3" line="\toptions vers=3,bg,soft,intr"
+      when: optionsexist.rc == 0
+
+    - name: Copiar storage.cfg para pve
+      shell: cp /tmp/storage.cfg /etc/pve/storage.cfg
+      when: optionsexist.rc == 0
+
+    - name: Desmonta NAS
+      shell: umount /mnt/pve/NAS
+      when: optionsexist.rc == 0
+
+    - name: Executa pvpvesm 
+      shell: pvesm status
+      when: optionsexist.rc == 0
+
+

@@ -1,0 +1,8 @@
+- hosts: proxmox
+  strategy: free
+  gather_facts: true
+  tags:
+    - proxmox
+  roles:
+    - proxmox
+    - nagios

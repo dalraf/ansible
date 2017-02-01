@@ -1,0 +1,11 @@
+usecron: true
+client: "nomeclient"
+servidor: "lnx01000000"
+enderecoservidor: "root@srv-nomeclient.nomeclientinf.remote:/home"
+crontabdef: " 0  21  * * *"
+dias: "7"
+cmdbackup: "/nomeclientutils/rsnapshotbackup{{servidor}}"
+diretorioroot: "/backups/{{client}}/{{servidor}}"
+arquivoconf: "/backups/{{client}}/confs/{{servidor}}.conf"
+disablecronbackupremoto: False
+

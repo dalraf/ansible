@@ -1,0 +1,32 @@
+- name: Instalar squid
+  apt: name=squid state=present
+
+- name: Verificar copia já executada
+  file: path=/etc/squid/copydone
+  register: copydone
+  ignore_errors: yes
+
+- name: Copiar arquivos padrao do squid
+  copy: src=squid/ dest=/etc/squid mode=0644 owner=root group=root
+  when: copydone.state == "absent"
+
+- name: Adicionar visible host name
+  lineinfile: dest=/etc/squid/squid.conf regexp="visible_hostname" line="visible_hostname {{ ansible_hostname }}" state=present
+
+- name: Adicionar servidor
+  lineinfile: dest=/etc/squid/squid.conf regexp="acl servidor src" line="acl servidor src {{ ipservidor }}" state=present
+
+- name: Adicionar sisbr
+  lineinfile: dest=/etc/squid/squid.conf regexp="acl sisbr dst" line="acl sisbr dst 172.16.0.0/16" state=present
+
+- name: Adicionar rede local
+  lineinfile: dest=/etc/squid/squid.conf regexp="acl redelocal src" line="acl redelocal src {{ redelocal }}" state=present
+
+- name: Adicionar rede local dst
+  lineinfile: dest=/etc/squid/squid.conf regexp="acl redelocaldst dst" line="acl redelocaldst dst {{ redelocal }}" state=present
+
+- name: Adicionar rede vpn nomeclient
+  lineinfile: dest=/etc/squid/squid.conf regexp="acl redevpnnomeclient dst" line="acl redevpnnomeclient dst 10.137.0.0/16" state=present
+
+- include: squidguard.yml
+  when: ( usesquidguard == True )

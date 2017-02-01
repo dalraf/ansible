@@ -1,0 +1,7 @@
+*~
+*#
+host_vars/*
+hosts
+*crt
+*key
+*nomeclient*

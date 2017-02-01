@@ -1,0 +1,16 @@
+#!/bin/bash
+for i in $(ssh 10.137.0.1 cat /var/lib/bind/baseinf.remote.hosts | egrep "[[:space:]]A[[:space:]]" | sed  's/A//;s/.baseinf.remote//;s/[[:space:]]\+/,/g' )
+do
+    echo $i
+    host="$(echo $i | cut -f 1 -d ',')"
+    ip="$(echo $i | cut -f 2 -d ',')"
+    linha=$(echo -e "${ip}\t${host}.localdomain\t${host}")
+    if grep $host /etc/hosts
+    then
+	echo "Subtituindo $host"
+	sed -i "s/^.*${host}.*$/$linha/" /etc/hosts
+    else
+	echo "Adicionando $host"
+	echo "$linha" >> /etc/hosts
+    fi
+done

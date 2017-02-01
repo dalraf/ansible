@@ -1,0 +1,74 @@
+- name: Instala pacote postfix
+  apt: name={{ item }} state=present allow_unauthenticated=yes
+  with_items: "{{packagespostfix}}"
+  
+
+- name: Adicionado linhas main.cf
+  lineinfile: dest=/etc/postfix/main.cf regexp="{{ item.split('=')[0] }}" line="{{ item }}"
+  register: maincffile
+  with_items: "{{linhasmaincf}}"
+  notify:
+    - postfix
+
+- name: Verificar sasl_passwd já existe
+  file: path=/etc/postfix/sasl_passwd
+  register: copydonesasl
+  ignore_errors: yes
+
+- name: Cria arquivo vazio sasl_passwd
+  copy: dest=/etc/postfix/sasl_passwd src=sasl_passwd  mode=0400 owner=root group=root
+  when: copydonesasl.state == "absent"
+
+- name: Adicionado linhas sasl_passwd
+  lineinfile: dest=/etc/postfix/sasl_passwd regexp="{{ smtpserver }}]:{{smtpport}}" line="{{ item }}"
+  register: saslpasswdfile
+  with_items: "{{linhassaslpasswd}}"
+  notify:
+    - postfix
+
+- name: Rodar postmap sasl_passwd
+  shell: postmap /etc/postfix/sasl_passwd chdir=/etc
+  when: saslpasswdfile.changed
+  notify:
+    - postfix
+
+
+- name: Verificar smtp_generic já existe
+  file: path=/etc/postfix/smtp_generic
+  register: copydonesmtp
+  ignore_errors: yes
+
+- name: Cria arquivo vazio smtp_generic
+  copy: dest=/etc/postfix/smtp_generic src=smtp_generic  mode=0400 owner=root group=root
+  when: copydonesmtp.state == "absent"
+
+- name: Adicionado linhas smtp_generic
+  lineinfile: dest=/etc/postfix/smtp_generic regexp="root@{{ansible_fqdn}}" line="{{ item }}"
+  register: smtpgenericfile
+  with_items: "{{linhassmtpgeneric}}"
+  notify:
+    - postfix
+
+- name: Rodar postmap smtp_generic
+  shell: postmap /etc/postfix/smtp_generic chdir=/etc
+  when: smtpgenericfile.changed
+  notify:
+    - postfix
+
+
+
+
+- name: Verificar se certificado existe
+  file: path=/etc/postfix/cacert.pem
+  register: copydonecert
+  ignore_errors: yes
+
+- name: Adicionar certificado
+  shell: cat /etc/ssl/certs/Thawte_Premium_Server_CA.pem | sudo tee -a /etc/postfix/cacert.pem chdir=/etc
+  when: copydonecert.state == "absent"
+  notify:
+    - postfix
+
+
+
+

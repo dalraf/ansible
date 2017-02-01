@@ -1,0 +1,36 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "cliente"
+    prompt: "Qual o cliente de destino?"
+    private: no
+  tasks:
+    - include_vars: hostnames.yml
+
+    - add_host:
+        name: "{{ hosts[cliente] }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars_prompt:
+    - name: "address"
+      prompt: "Qual o ip ou rede? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "hostname"
+      prompt: "Qual o nome da cpu ? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "fabricante"
+      prompt: "Qual o nome do fabricante do software ? (deixe nulo ser não for o caso)"
+      private: no
+
+
+  tasks:
+
+    - name: Listar softwares
+      shell: docker exec -i salt-master salt -C "{% if address != "" %} S@{{ address }} {% endif %} {% if hostname != "" %} G@host:{{ hostname }} {% endif %}" cmd.run 'Get-WmiObject -Class Win32_Product | where {$_.Vendor -like "*{{ fabricante }}*"}'   shell="powershell"
+      register: saltout
+    - debug: var=saltout.stdout_lines

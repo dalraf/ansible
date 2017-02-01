@@ -1,0 +1,26 @@
+- name: Removendo container se existir
+  docker_container:
+    name: wpadswebserver
+    state: absent
+
+- name: Criar diretorio nomeclientutils/html 
+  file: path=/nomeclientutils/html state=directory mode=0755 owner=root group=root
+
+- name: Criar arquivo wpad
+  template: src=wpad.j2 dest=/nomeclientutils/html/wpad.dat mode=0644 owner=root group=root
+
+- name: Subindo container wpadwebserver
+  docker_container:
+    name: wpadswebserver
+    image: nginx:mainline-alpine
+    interactive: yes
+    tty: yes
+    state: started
+    restart: yes
+    volumes:
+      - "/nomeclientutils/html:/usr/share/nginx/html:ro"
+    ports:
+      - "80:80"
+
+
+

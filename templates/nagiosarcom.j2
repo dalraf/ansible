@@ -1,0 +1,30 @@
+###################################################################################
+# Define a host for the local machine
+###################################################################################
+
+define host{
+        use                             linux-server
+        host_name                       {{ item.key }}
+        alias                           {{ item.value.descricao}}
+        address                         {{ item.value.ipaddress}}
+        }
+
+###################################################################################
+# Define a service to "ping" the local machine
+###################################################################################
+
+define service{
+        use                             local-service
+        host_name                       {{ item.key}}
+        service_description             PING
+        check_command                   check-host-nomeclient
+        }
+
+{% if item.value.servicenomeclient %}
+define service{
+        use                             local-service
+        host_name                       {{ item.key }}
+        service_description             Status
+        check_command                   check-status-nomeclient
+        }
+{% endif %}

@@ -1,0 +1,30 @@
+- hosts: srv-nomecliente-pac1
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Remove linhas existentes
+      lineinfile: dest=/etc/samba/smb.conf regexp="{{item}}"  state=absent
+      notify: 
+        - samba
+        - commit
+      with_items:
+        - "Create Mask = 0775"
+        - "Directory mask = 0775"
+        - "hide files = /aquota.group/aquota.user/"
+
+
+    - name: Corrige parametros do samba
+      notify: 
+        - samba
+        - commit
+      replace: dest=/etc/samba/smb.conf regexp='(path = [/a-zA-Z0-9]+)' replace='\1\nCreate Mask = 0775\nDirectory mask = 0775\nhide files = /aquota.group/aquota.user/'
+
+  handlers:
+    - name: samba
+      service: name=smbd state=reloaded
+
+    - name: commit
+      shell: git add /etc/samba/smb.conf ; git commit -m "Alteracao do ansible" chdir=/etc
+      ignore_errors: yes

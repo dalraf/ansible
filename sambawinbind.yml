@@ -1,0 +1,7 @@
+- hosts: sambawinbind
+  strategy: free
+  gather_facts: true
+  tags:
+    - sambawinbind
+  roles:
+    - sambawinbind

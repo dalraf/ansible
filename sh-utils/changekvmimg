@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -z "$1" ]
+   then
+    echo "Uso: changekvmimg disco tamanhonovototal em GB"
+    else
+    dd if=/dev/zero of=${1} seek=${2} obs=1GB count=0
+fi

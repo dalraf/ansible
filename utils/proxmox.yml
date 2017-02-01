@@ -1,0 +1,4 @@
+- hosts: proxmox
+  strategy: free
+  roles:
+    - proxmox

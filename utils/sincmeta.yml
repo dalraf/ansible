@@ -1,0 +1,18 @@
+- hosts: syncservers
+  strategy: free
+  gather_facts: false
+  tags:
+    - syncserver
+  tasks:
+    - name: salva meta
+      command: /bin/bash -c "/nomeclientutils/metasave save"
+      when: master
+
+    - name: sincroniza meta
+      command: /bin/bash -c "/nomeclientutils/syncnomeclient"
+      when: master
+
+    - name: carrega meta
+      command: /bin/bash -c "/nomeclientutils/metasave"
+      when: not master
+      

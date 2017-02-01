@@ -1,0 +1,19 @@
+- hosts: backupremoto
+  gather_facts: false
+  tags:
+    - backupremoto
+  roles:
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01000000" , enderecoservidor: "root@srv-nomeclient.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * 6", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01000000" , enderecoservidor: "root@srv-nomeclient.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90",}
+    - { role: backupremoto , usecron: true, client: "teste" , servidor: "srvnomeclient" , enderecoservidor: "root@192.168.0.247:/home/servidor/Manuais",  crontabdef: " 0  21  * * *", dias: "90",}
+    - { role: backupremoto , usecron: true, client: "scentrooeste" , servidor: "lnx01410102" , enderecoservidor: "root@srv-nomecliente-pac1.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90",}
+    - { role: backupremoto , usecron: true, client: "scentrooeste" , servidor: "lnx01410100" , enderecoservidor: "root@srv-nomecliente.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "scentrooeste" , servidor: "lnx01410103" , enderecoservidor: "root@srv-nomecliente-pac3.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01411700" , enderecoservidor: "root@srv-nomeclient.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01411701" , enderecoservidor: "root@srv-nomeclient-pac01.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01411702" , enderecoservidor: "root@srv-nomeclient-pac02.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01411703" , enderecoservidor: "root@srv-nomeclient-pac03.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "coopercorreios" , servidor: "lnx01429700" , enderecoservidor: "root@srv-coopcorreios.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01411704" , enderecoservidor: "root@srv-nomeclient-pac04.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomeclientcredi" , servidor: "lnx01402900" , enderecoservidor: "root@srv-nomeclientcredi.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}
+    - { role: backupremoto , usecron: true, client: "nomecliente" , servidor: "lnx02427600" , enderecoservidor: "root@srv-nomeclient-sede2.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90", disablecronbackupremoto: False,}

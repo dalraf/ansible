@@ -1,0 +1,51 @@
+- hosts: correcaodns
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+
+#    - name: Adicionar marcar superior
+#      lineinfile: dest=/etc/bind/named.conf.local line="// BEGIN Correcao da cecremge" state=present insertbefore="zone www.sicoobcentralcecremge.com.br {" 
+
+#    - name: Adicionar marcar inferior
+#      lineinfile: dest=/etc/bind/named.conf.local line="// END Correcao da cecremge\n\n" state=present insertbefore="zone [a-z]+\.local {"
+
+
+    - name: Add correcao cecremge 
+      notify: 
+        - bind9 
+        - commit
+      blockinfile:
+        state: present
+        dest: /etc/bind/named.conf.local
+        marker: "// {mark} Correcao da cecremge"
+        block: |
+
+          zone www.sicoobcentralcecremge.com.br {
+               type forward;
+               forwarders {
+               201.73.148.54;
+               200.233.189.134;
+               };
+               forward only;
+          };
+
+          zone forms.sicoobcentralcecremge.com.br {
+               type forward;
+               forwarders {
+               201.73.148.54;
+               200.233.189.134;
+               };
+               forward only;
+          };
+
+
+  handlers:
+
+    - name: bind9
+      service: name=bind9 state=restarted
+ 
+    - name: commit
+      shell: git add bind/named.conf.local ; git commit -m "Alterado via ansible" chdir=/etc
+      ignore_errors: yes

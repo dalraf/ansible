@@ -1,0 +1,22 @@
+- hosts: servidores
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Verificar status etc
+      shell: git status | grep "working directory clean" chdir=/etc
+      register: statusetcgitnomeclient
+      ignore_errors: yes
+
+
+    - name: Pega status etc
+      shell: cd /etc ; git status
+      register: outputsaidaetc
+      ignore_errors: yes
+      when: statusetcgitnomeclient.rc != 0
+
+
+    - name: Mostra saida git etc
+      debug: msg="{{ outputsaidaetc.stdout_lines }}" 
+      when: statusetcgitnomeclient.rc != 0

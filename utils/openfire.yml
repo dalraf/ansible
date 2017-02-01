@@ -1,0 +1,21 @@
+- hosts: servidores:openfire
+  strategy: free
+  gather_facts: false
+  tags:
+    - openfire
+  tasks:
+    - name: Checar se o openfire está instalado
+      shell: dpkg-query -l openfire
+      register: openfireinstalled
+      ignore_errors: yes
+ 
+    - name: Define reincio do openfire
+      cron: name="reiniciaropenfire" minute="00" hour="4"  job="/etc/init.d/openfire restart" cron_file="reiniciaropenfire" user=root state=present
+      register: cronopenfirerestart
+      when: openfireinstalled.rc == 0
+
+
+    - name: Commit resultado
+      shell: git add cron.d/reiniciaropenfire ; git commit -m "Adicionado reinicio do openfire" chdir=/etc
+      when: cronopenfirerestart.changed
+      ignore_errors: yes

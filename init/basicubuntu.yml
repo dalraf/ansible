@@ -1,0 +1,8 @@
+- hosts: inithosts
+  strategy: free
+  gather_facts: true
+  tags:
+    - basicubuntu
+  roles:
+    - basicubuntu
+

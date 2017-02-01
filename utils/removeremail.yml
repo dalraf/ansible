@@ -1,0 +1,96 @@
+- hosts: "{{hostemail}}"
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+
+
+    - name: Remover fetchmail
+      lineinfile: dest=/etc/fetchmailrc regexp="{{fetcmailline}}" state=absent
+      register: fetchmail
+
+    - name: Commit Fetchmail
+      shell: git add fetchmailrc ; git commit -m "Alterado via ansible" chdir=/etc
+      ignore_errors: yes
+      when: fetchmail.changed==true
+
+
+    - name: Remover aliases
+      lineinfile: dest=/etc/aliases regexp="{{aliasesline}}"  state=absent
+      register: aliases
+
+    - name: Rodar postaliases
+      shell: postalias aliases chdir=/etc
+      ignore_errors: yes
+      when: aliases.changed==true
+
+    - name: Commit aliases
+      shell: git add aliases ; git add aliases.db ; git commit -m "Alterado via ansible" chdir=/etc
+      ignore_errors: yes
+      when: aliases.changed==true
+
+
+    - name: Adicionar sasl
+      lineinfile: dest=/etc/postfix/sasl_passwd regexp="{{saslline}}"  state=absent
+      register: sasl
+
+    - name: Rodar postmap
+      shell: postmap sasl_passwd chdir=/etc/postfix
+      ignore_errors: yes
+      when: sasl.changed==true
+
+    - name: Commit sasl
+      shell: git add postfix/sasl_passwd ; git add postfix/sasl_passwd.db ; git commit -m "Alterado via ansible" chdir=/etc
+      ignore_errors: yes
+      when: sasl.changed==true
+
+
+    - name: Adicionar transport
+      lineinfile: dest=/etc/postfix/transport regexp="{{transportline1}}" state=absent
+      register: transport
+      when: transportcmd==true
+
+    - name: Rodar postmap
+      shell: postmap transport chdir=/etc/postfix
+      ignore_errors: yes
+      when: transportcmd==true and transport.changed==true
+
+    - name: Commit sasl
+      shell: git add postfix/transport ; git add postfix/transport.db ; git commit -m "Alterado via ansible" chdir=/etc
+      ignore_errors: yes
+      when: transportcmd==true and transport.changed==true
+
+
+    - name: Reload postfix
+      shell: postfix reload chdir=/etc
+      ignore_errors: yes
+      when: aliases.changed==true or sasl.changed==true
+
+
+    - name: Adicionar transport no servidor master
+      lineinfile: dest=/etc/postfix/transport regexp="{{transportline2}}"  state=absent
+      register: transport
+      delegate_to: "{{hostmasteremail}}"
+      when: transportcmd==true
+
+    - name: Rodar postmap no servidor master
+      shell: postmap transport chdir=/etc/postfix
+      delegate_to: "{{hostmasteremail}}"
+      ignore_errors: yes
+      when: transportcmd==true and transport.changed==true
+
+    - name: Commit sasl Rodar postmap no servidor master
+      shell: git add postfix/transport ; git add postfix/transport.db ; git commit -m "Alterado via ansible" chdir=/etc
+      delegate_to: "{{hostmasteremail}}"
+      ignore_errors: yes
+      when: transportcmd==true and transport.changed==true
+
+    - name: Reload postfix Rodar postmap no servidor master
+      shell: postfix reload chdir=/etc
+      delegate_to: "{{hostmasteremail}}"
+      ignore_errors: yes
+      when: transportcmd==true and transport.changed==true
+
+
+ 

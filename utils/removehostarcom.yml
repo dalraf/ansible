@@ -1,0 +1,36 @@
+- hosts: 127.0.0.1
+#  strategy: free
+#  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    
+    - name: Remove nagios
+      file: path=/etc/nagios3/hosts/{{name}}.cfg state=absent
+      notify: 
+        - nagios
+        - commitnagios
+
+    - name: Remove bind
+      lineinfile: dest=/var/lib/bind/nomeclientinf.remote.hosts regexp="{{name}}.nomeclientinf.remote" state=absent
+      notify: 
+        - bind
+        - commitbind
+
+  handlers:
+    - name: nagios
+      service: name=nagios3 state=restarted
+
+    - name: commitnagios
+      shell: git add --all nagios3/hosts ; git commit -m "Removido nagios pelo ansible" chdir=/etc
+      ignore_errors: yes
+
+    - name: bind
+      service: name=bind9 state=restarted
+
+    - name: commitbind
+      shell: git add nomeclientinf.remote.hosts ; git commit -m "Removido bind pelo ansible" chdir=/var/lib/bind
+      ignore_errors: yes
+
+
+

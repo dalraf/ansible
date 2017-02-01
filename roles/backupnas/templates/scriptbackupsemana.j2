@@ -1,0 +1,31 @@
+#!/bin/bash
+echo 4 > {{ nagiosbackupresult }}
+if  ps aux | grep -v "grep" | egrep  "*rsync.*-rtv" > /dev/null 2>&1; then
+    logger -t BCKDALRAF "Script de backup está sendo executado: saindo"
+    exit 1
+fi
+if [[ $1 == "" ]]
+then
+    logger -t BCKDALRAF "Sem parametros"
+    exit 1
+fi
+pastafull="{{pastafull}}"
+{% for i in destino %}
+mkdir {{ temp }}/$1
+echo "$(date)" > {{ temp }}/$1/databackup.txt
+chmod -R 777 {{ temp }}/$1
+RSYNC_PASSWORD={{ rsyncpasswd }}  rsync -rv --delete --prune-empty-dirs {{ temp }}/$1/databackup.txt {{ i }}/$1/
+rm -r {{ temp }}/$1
+if {{ usebackdifere }} && [[ $pastafull != $1 ]]
+then
+    compcmd="--compare-dest=../${pastafull}"
+fi
+if {{ cmdprep }} && RSYNC_PASSWORD={{ rsyncpasswd }} rsync {% if limitetransf %} --bwlimit={{ limitetransf }} {% endif %} -rtv {% if onemount %} --one-file-system {% endif %} $compcmd --delete $2 {{ i }}/$1  >> {{ logbackup }} 2>&1
+then
+        echo 0 > {{ nagiosbackupresult }}
+	echo  "Backup do {{ i }} em $1 efetuado com sucesso" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ logbackup }} 2>&1
+else
+        echo 2 > {{ nagiosbackupresult }}
+	echo  "Backup do {{ i }} em $1 efetuado com erro" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ logbackup }} 2>&1
+fi
+{% endfor %}

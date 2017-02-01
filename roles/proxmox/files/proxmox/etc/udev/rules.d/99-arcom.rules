@@ -1,0 +1,3 @@
+#Udev Dalraf
+	SUBSYSTEM=="block", ACTION=="add|change", ENV{ID_FS_LABEL}=="bcknomeclient", KERNEL=="sd?1", SYMLINK+="arcdrv1", RUN+="/nomeclient/backup/udevhotbackup hotadd $name", ENV{BCKDALRAF}="sim", ENV{REMOVE_CMD}="/nomeclient/backup/udevhotbackup hotremove $name"
+	

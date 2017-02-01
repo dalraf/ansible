@@ -1,0 +1,19 @@
+#/bin/bash
+if ps aux | grep -v "grep" | egrep  "*unison.*{{ item }}" > /dev/null 2>&1 
+then
+   echo "Unison em {{ item }} está sendo executado" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ filelogsync }} 2>&1
+    exit
+fi
+syncerro=true
+{% for j in diretoriosyncnomeclient %}
+unison  -auto -prefer {{ j }} -batch {{ j }} ssh://{{ item }}//{{ j }}  || syncerro=false
+{% endfor %}
+if $syncerro
+   then
+	echo "Sincronismo feito {{ item }}" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ filelogsync }} 2>&1
+	echo 0 > {{syncnagioserro}}{{item}}
+   else
+	echo "Sincronismo com erro {{ item }}" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ filelogsync }} 2>&1
+	echo 1 > {{syncnagioserro}}{{item}}
+fi
+

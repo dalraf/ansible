@@ -1,0 +1,2 @@
+#!/bin/bash
+nice -n 19 getfacl -R -n -p -P $1 > $2

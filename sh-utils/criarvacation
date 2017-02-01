@@ -1,0 +1,7 @@
+#!/bin/bash
+su -s /bin/bash -c "vacation" "$1"
+if [ -n "$2" ] 
+    then
+    su -s /bin/bash -c "echo  \"\\$1, \\\"|/usr/bin/vacation -a $2 $1\\\" \"  > ~/.forward" $1
+    su -s /bin/bash -c "cat ~/.vacation.msg | sed -r \"1 s/^(.*)$/From: $2\n\1/g\" > ~/.vacation.new ; mv ~/.vacation.new ~/.vacation.msg" $1
+fi

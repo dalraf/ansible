@@ -1,0 +1,9 @@
+- hosts: proxmox
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Commit file
+      shell: git add /etc ; git commit -m "Alteracao do ansible" chdir=/etc
+      ignore_errors: yes

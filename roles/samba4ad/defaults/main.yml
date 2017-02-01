@@ -1,0 +1,15 @@
+usebindredirect: false
+dominio: "nomeclientinf.local"
+servidordc: "srv01000100"
+servidorlinux: "{{ ansible_hostname }}"
+ipservidorlinux: "192.168.0.154"
+ipservidordc: "192.168.0.1"
+enderecoreverson: "254.168.192"
+usuario: "administrador"
+password: "123456"
+interface: "br0"
+compartilhamentos: {share: "/home/share"}
+packagessamba: ["samba","krb5-user","ldb-tools","winbind","libnss-winbind","libpam-winbind","iproute2","iputils-ping","acl","cron","rsync"]
+dnsforward: "192.168.0.254"
+sysvol: "/home/sysvol"
+netlogon: "/home/netlogon"

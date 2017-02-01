@@ -1,0 +1,34 @@
+DEFAULT menu.c32
+PROMPT 0
+MENU TITLE Lista
+
+label Clonezilla
+      MENU DEFAULT
+      MENU LABEL Clonezilla
+      kernel clonezilla/vmlinuz
+      append initrd=clonezilla/initrd.img boot=live live-config noswap nolocales edd=on nomodeset ocs_live_run=\"ocs-live-general\" ocs_live_extra_param=\"\" ocs_live_keymap=\"\" ocs_live_batch=\"no\" ocs_lang=\"\" vga=788 nosplash fetch=tftp://{{ ipinterfacelocal }}/clonezilla/filesystem.squashfs
+
+label Rescue CD 32
+      menu label Rescuecd ^Live
+      kernel rescue/rescue32
+      append initrd=rescue/initram.igz dodhcp netboot=http://{{ ipinterfacelocal }}/sysrcd.dat nomodeset
+
+label Rescue CD 64
+      menu label Rescuecd 64 ^Live
+      kernel rescue/rescue64
+      append initrd=rescue/initram.igz 64bit dodhcp netboot=http://{{ ipinterfacelocal }}/sysrcd.dat nomodeset
+
+label Ntpass
+      menu label Ntpass
+      kernel ntpasswd/vmlinuz
+      append rw vga=1 initrd=ntpasswd/initrd.cgz,ntpasswd/scsi.cgz
+
+label Memdisk
+      menu label Memdisk
+      kernel memtestp
+      append -
+
+label Freedos
+      menu label Freedos
+      kernel memdisk
+      append initrd=freedos.img floppy

@@ -1,0 +1,9 @@
+master: true
+diretoriosyncnomeclient: ["/home/sync","/home/dados"]
+peerssync: ["192.168.0.254","192.168.0.247"]
+metafile: "/opt/syncserver/metafile"
+scriptfile: "/nomeclientutils/syncnomeclient"
+scriptmetasave: "/nomeclientutils/metasave"
+filecronsyncnomeclient: "/etc/cron.d/syncnomeclient"
+resultcronsync: ""
+filelogsync: "/var/log/log.syncnomeclient"

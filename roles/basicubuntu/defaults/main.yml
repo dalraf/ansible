@@ -1,0 +1,15 @@
+monitornomeclient: false
+usedisco:  false
+usedrbd: false
+usebackup:  true
+webmin: false
+
+packagesbasic1004: [ "rsync", "git-core", "emacs23-nox", "iftop", "openvpn", "nmap", "atop", "screen", "smartmontools", "sudo", "ntpdate", "lshw", "ntfs-3g", "kpartx" ,"mdadm", "metastore", "links", "iptables-persistent", "acl" , "smbclient" , "stunnel4", "moreutils" ]
+
+packagesbasic1404: [ "rsync", "git-core", "emacs23-nox", "iftop", "openvpn", "nmap", "atop", "screen", "smartmontools", "sudo", "ntpdate", "lshw", "ntfs-3g", "kpartx" ,"mdadm", "metastore", "links", "iptables-persistent", "acl" , "smbclient" , "stunnel4", "parallel" ]
+
+packagesbasic1604: [ "rsync", "git-core", "emacs-nox", "iftop", "openvpn", "nmap", "atop", "screen", "smartmontools", "sudo", "ntpdate", "lshw", "ntfs-3g", "kpartx" ,"mdadm", "metastore", "links", "iptables-persistent", "acl" , "smbclient" , "stunnel4", "parallel" ]
+
+
+puppetpackages: ["puppet","puppet-common","facter","hiera"]
+

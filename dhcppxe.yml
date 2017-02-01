@@ -1,0 +1,7 @@
+- hosts: dhcppxe
+  strategy: free
+  gather_facts: true
+  tags:
+    - dhcppxe
+  roles:
+    - dhcppxe

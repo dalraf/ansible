@@ -1,0 +1,20 @@
+- hosts: networkhosts
+  strategy: free
+  gather_facts: true
+  tags:
+    - network
+  roles:
+  - role: ansible-network-interfaces
+    network_manage_devices: yes
+    network_interfaces:
+    - device: ens18
+      auto: true
+      family: inet
+      method: static
+      address: 192.168.12.249
+      netmask: 255.255.255.0
+      gateway: 192.168.12.248
+      dns_search: "jusmp.local"
+      nameservers:
+        - 192.168.12.10
+

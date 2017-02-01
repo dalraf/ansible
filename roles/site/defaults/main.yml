@@ -1,0 +1,5 @@
+dominiosmtp: "nomeclientinf.com.br"
+nomepostfix: "mail.nomeclientinf.com.br"
+passwordmysql: "123456"
+userpassworddefault: "$6$Xyx9htt3NcBIgSV$V60VHRDz0Ux9dF76B.8a90pknrYg9yNjWxnHfcTr1/iKSsCnH2p1yYhu08goB0zdiRiLnncOE3EOhT.moSke90"
+listadeusuarios: [ "adriano","adriano.teles","alexandre","daniel","glpiteste","joao","luciano","marcoschaia","notificacao","railan","ronaldo","seguranca","sergio","sonia","suporte","teste","vanusa" ]

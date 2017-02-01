@@ -1,0 +1,4 @@
+#!/bin/bash
+[ -z "$*" ] && echo "removehostnomeclient nome" && exit 0
+ansible-playbook  -i /nomeclient/ansible/hosts /nomeclient/ansible/utils/removehostnomeclient.yml -e name=${1}
+

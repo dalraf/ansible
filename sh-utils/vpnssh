@@ -1,0 +1,13 @@
+#!/bin/bash
+# sshd.conf
+#GatewayPorts yes
+#PermitTunnel yes
+#AllowTCPForwarding yes
+
+ssh \
+  -o PermitLocalCommand=yes \
+  -o LocalCommand="sudo ifconfig tun5 192.168.244.2 pointopoint 192.168.244.1 netmask 255.255.255.0; iptables -t nat -A POSTROUTING -o tun5 -j MASQUERADE" \
+  -o ServerAliveInterval=60 \
+  -w 5:5 $1 \
+  'sudo ifconfig tun5 192.168.244.1 pointopoint 192.168.244.2 netmask 255.255.255.0; echo tun0 ready'
+

@@ -1,0 +1,110 @@
+- hosts: servidores
+  strategy: free
+  serial: 100%
+  no_log: True
+  gather_facts: False
+  tasks:
+    - name: Verificar backup nomeclient.cfg
+      command: grep -i "usebackup=true" /etc/nomeclient/nomeclient.cfg
+      register: grepnomeclientbackup
+      ignore_errors: yes
+
+    - block: 
+        - name: Definir nrpe command
+          set_fact: comandonrpe="/nomeclient/nagios/nagiosnomeclient"
+
+        - name: Definir nagiosnrpe para nomeclient.cfg
+          template: src=nrpe_local.cfg.j2 dest=/etc/nagios/nrpe_local.cfg mode=0644 owner=root group=root
+          notify: nrpe
+
+      when: grepnomeclientbackup.rc == 0
+
+    - name: Capturar status backup nomeclient antigo
+      shell: cat /nomeclient/backup/nagiosstate
+      register: statusbackupnomeclientcfg
+      when: grepnomeclientbackup.rc == 0
+
+    - name: Verificar status backup novo ansible
+      stat: path=/etc/cron.d/backupsemana
+      register: filescronscript1
+
+    - name: Verificar status backup novo puppet
+      stat: path=/etc/cron.d/bcknomeclientsemana
+      register: filescronscript2
+
+    - block: 
+        - name: Definir nrpe command
+          set_fact: comandonrpe="/nomeclientutils/nagiosnomeclient"
+
+        - name: Definir nagiosnrpe para nomeclient.cfg
+          template: src=nrpe_local.cfg.j2 dest=/etc/nagios/nrpe_local.cfg mode=0644 owner=root group=root
+          notify: nrpe
+
+      when: filescronscript1.stat.exists or filescronscript2.stat.exists
+
+    - name: Capturar status de backup novo
+      shell: cat /nomeclientutils/nagiosstate
+      register: statusbackupscript
+      when: filescronscript1.stat.exists or filescronscript2.stat.exists 
+
+    - name: Verificar backup de cloud
+      command: grep -i "usebackup=true" /etc/nomeclient/cloud.cfg
+      register: grepnomeclientbackupcloud
+      ignore_errors: yes
+
+    - block: 
+        - name: Definir nrpe command
+          set_fact: comandonrpe="/nomeclient/cloud/nagios/nagiosnomeclient"
+
+        - name: Definir nagiosnrpe para nomeclient.cfg
+          template: src=nrpe_local.cfg.j2 dest=/etc/nagios/nrpe_local.cfg mode=0644 owner=root group=root
+          notify: nrpe
+
+      when: grepnomeclientbackupcloud.rc == 0
+
+    - name: Capturar status de backup cloud
+      shell: cat /nomeclient/cloud/backup/nagiosstate
+      register: statusbackupcloud
+      when: grepnomeclientbackupcloud.rc == 0
+
+    - name: Definir saida
+      set_fact: saida="Indefinido"
+
+    - name: Definir backup nomeclientcfg ok
+      set_fact: saida="Backup nomeclientcfg ok"
+      when: grepnomeclientbackup.rc == 0 and statusbackupnomeclientcfg.stdout == "0"
+
+    - name: Definir backup nomeclientcfg failed
+      set_fact: saida="Backup nomeclientcfg failed"
+      when: grepnomeclientbackup.rc == 0 and statusbackupnomeclientcfg.stdout != "0"
+
+    - name: Definir backup novo ok
+      set_fact: saida="Backup script ok"
+      when: ( filescronscript1.stat.exists or filescronscript2.stat.exists ) and statusbackupscript.stdout == "0"
+
+    - name: Definir backup script failed
+      set_fact: saida="Backup script failed"
+      when: ( filescronscript1.stat.exists or filescronscript2.stat.exists ) and statusbackupscript.stdout != "0"
+
+    - name: Definir backup duplicado
+      set_fact: saida="Backup script and nomeclientcfg"
+      when: ( filescronscript1.stat.exists or filescronscript2.stat.exists ) and grepnomeclientbackup.rc == 0
+
+    - name: Definir backup cloud ok
+      set_fact: saida="Backup cloud ok"
+      when: grepnomeclientbackupcloud.rc == 0 and statusbackupcloud.stdout == "0"
+
+    - name: Definir backup cloud failed
+      set_fact: saida="Backup cloud failed"
+      when: grepnomeclientbackupcloud.rc == 0 and statusbackupcloud.stdout != "0"
+
+    - name: Definir saida
+      debug: msg="{{ saida }}" 
+
+  handlers:
+    - name: nrpe 
+      shell: killall nrpe;/etc/init.d/nagios-nrpe-server start; cd /etc ; git add nagios ; git commit -m "Alteração do nagios"
+
+
+      
+

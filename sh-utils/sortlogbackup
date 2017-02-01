@@ -1,0 +1,2 @@
+#!/bin/bash
+( cat /base/report/log.udevhotbackup ; for i in $(ls -t /base/report/log.udevhotbackup.gz* ) ; do zcat $i ; done )

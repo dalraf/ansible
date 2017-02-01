@@ -1,0 +1,9 @@
+- hosts: srv-nomeclient-sede srv-nomeclient-pac1 srv-nomeclient-pac3 srv-nomeclient-pac2
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Download pfsense
+      shell: wget -c -O /opt/ubuntu.iso "http://releases.ubuntu.com/16.04/ubuntu-16.04-server-amd64.iso?_ga=1.179628516.1128979013.1465997599"
+      ignore_errors: no

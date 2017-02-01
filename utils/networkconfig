@@ -1,0 +1,3 @@
+#!/bin/bash
+ansible-playbook  -i /nomeclient/ansible/hosts /nomeclient/ansible/networkconfig.yml
+

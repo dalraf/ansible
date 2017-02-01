@@ -1,0 +1,10 @@
+- hosts: [sambadocker]
+  strategy: free
+  gather_facts: true
+  tags:
+    - dockersambadc
+  roles:
+    - dockerinstall
+    - dockersambadc
+
+

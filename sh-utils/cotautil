@@ -1,0 +1,8 @@
+#show usuarios
+repquota -u -v
+#show grupos
+repquota -g -v
+#definir cota usuario kb
+edquota -u
+#definir cota grupo kb
+edquota -g

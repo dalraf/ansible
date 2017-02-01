@@ -1,0 +1,3 @@
+#!/bin/bash
+( for i in $(ls -tr /var/log/syslog*gz 2>/dev/null ) ; do zcat $i ; done ; [ -f /var/log/syslog.1 ] && cat /var/log/syslog.1 ; [ -f /var/log/syslog ] && cat /var/log/syslog ) | egrep -v -i  "ansible|cron" |grep rsnapshot
+

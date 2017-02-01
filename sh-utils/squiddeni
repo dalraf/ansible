@@ -1,0 +1,2 @@
+#!/bin/bash
+egrep "$1" /var/log/{squid,squid3}/access.log | grep DENI | sed -r 's,^.*(http[s]?://|CONNECT )([.0-9a-z\-]+).*,\2,' | sort | uniq

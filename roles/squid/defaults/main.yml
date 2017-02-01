@@ -1,0 +1,9 @@
+filesquidconf: "/etc/squid3/squid.conf"
+diretoriosquidconf: "/etc/squid3"
+ipservidor: "192.168.0.1"
+redelocal: "192.168.0.0/24"
+sisbrenable: true
+vpnnomeclientenable: true
+usesquidguard: False
+squidguarddomains: [ "porn", "virusinfected" ]
+squidguardsiteblock: "http://tech4bros.com/wp-content/uploads/2015/08/unblock-blocked-websites.png"

@@ -1,0 +1,51 @@
+- name: Definir diretório backup
+  file: path=/backups state=directory owner=root group=root mode=0755
+
+- name: Definir diretório do cliente
+  file: path=/backups/{{client}} state=directory owner=root group=root mode=0755
+
+- name: Definir diretório do servidor
+  file: path=/backups/{{client}}/{{servidor}} state=directory owner=root group=root mode=0755
+
+- name: Definir diretório daily.0
+  file: path=/backups/{{client}}/{{servidor}}/daily.0 state=directory owner=root group=root mode=0755
+
+- name: Definir diretório rsnapshot
+  file: path=/backups/{{client}}/{{servidor}}/daily.0/rsnapshot state=directory owner=root group=root mode=0755
+
+- name: Definir diretório de configuração
+  file: path=/backups/{{client}}/confs state=directory owner=root group=root mode=0755
+
+- name: Definir rsnapshot.conf
+  template: src=rsnapshotserverconf.j2 dest=/backups/{{client}}/confs/{{servidor}}.conf mode=0644 owner=root group=root
+
+- name: Definir script backup
+  template: src=rsnapshotserverscript.j2 dest={{ cmdbackup }} mode=0755 owner=root group=root
+
+- name: Definir cron de backup
+  template: src=rsnapshotservercron.j2 dest=/etc/cron.d/{{ servidor }} mode=0644 owner=root group=root
+  register: resultcronbackupremotoadd
+  when: ( disablecronbackupremoto == False )
+
+- name: Definir cron de backup
+  file: path=/etc/cron.d/{{ servidor }} state=absent
+  register: resultcronbackupremotodel
+  when: ( disablecronbackupremoto == True )
+
+- name: Definir rotate de log de backup
+  template: src=backuprotate.j2 dest=/etc/logrotate.d/backuprotate mode=0644 owner=root group=root
+  register: backuprotatefile
+
+- name: Definir script para ver log de backup
+  template: src=viewbackuplog.j2 dest=/usr/bin/viewbackuplog mode=0755 owner=root group=root
+
+- name: Verificar alteração de arquivo
+  include: libs/commit.yml result={{ item.result }} arquivo={{ item.arquivo }}
+  with_items:
+    - { result: "{{ resultcronbackupremotoadd }}" , arquivo: "/etc/cron.d/{{ servidor }}" }
+    - { result: "{{ resultcronbackupremotodel }}" , arquivo: "/etc/cron.d/{{ servidor }}" }
+    - { result: "{{ backuprotatefile }}" , arquivo: "/etc/logrotate.d/backuprotate" }
+
+
+
+

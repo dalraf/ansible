@@ -1,0 +1,23 @@
+emailsender: "suporte@nomeclientinf.com.br"
+smtpserver: "mail.nomeclientinf.com.br"
+smtpport: "587"
+user: "suporte@nomeclientinf.com.br"
+password: "123456"
+packagespostfix: [ "postfix", "mailutils" , "libsasl2-2", "ca-certificates", "libsasl2-modules" ]
+linhasmaincf:
+  - "myorigin = {{ansible_domain}}"
+  - "relayhost = [{{ smtpserver }}]:{{smtpport}}"
+  - "smtp_sasl_auth_enable = yes"
+  - "smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd"
+  - "smtp_sasl_security_options = noanonymous"
+  - "smtp_tls_CAfile = /etc/postfix/cacert.pem"
+  - "smtp_use_tls = yes"
+  - "smtp_generic_maps = hash:/etc/postfix/smtp_generic"
+
+linhassaslpasswd:
+  - "[{{ smtpserver }}]:{{smtpport}}    {{user}}:{{password}}"
+
+linhassmtpgeneric:
+  - "root@{{ansible_fqdn}}    {{emailsender}}"
+  
+

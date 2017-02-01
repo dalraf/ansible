@@ -1,0 +1,44 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "hostdestino"
+    prompt: "Qual o host de destino?"
+    private: no
+  tasks:
+    - add_host:
+        name: "{{ hostdestino }}"
+        groups: hostdestino
+
+
+- hosts: hostdestino
+  strategy: free
+  gather_facts: no
+  vars_prompt:
+  - name: "ansible_port"
+    prompt: "Qual a porta ssh?"
+    private: no
+  - name: "ansible_ssh_user"
+    prompt: "Qual o usuário do ssh ?"
+    private: no
+  - name: "ansible_ssh_pass"
+    prompt: "Qual a senha do ssh ?"
+    private: no
+  - name: "servidorinter"
+    prompt: "Qual o servidor intermediario (deixe em branco se não existir) ?"
+    private: no
+  vars:
+    ansible_become: yes 
+    ansible_become_user: root 
+    ansible_become_method: sudo 
+    ansible_become_pass: "{{ ansible_ssh_pass }}"
+  pre_tasks:
+    - raw: sudo bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qy python-minimal)"
+    - set_fact:
+        ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q root@{{ servidorinter }}"'
+        when:  servidorinter != ""
+    - setup:
+  tags:
+    - basicubuntu
+  roles:
+    - basicubuntu
+

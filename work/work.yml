@@ -1,0 +1,7 @@
+- hosts: work
+  strategy: free
+  gather_facts: true
+  tags:
+    - work
+  roles:
+    - { role: proxmox-postfix, emailsender: "email@email.com.br", smtpserver: "smtp.zoho.com", smtpport: "587", user: "email@email.com.br", password: "senhaemail" }

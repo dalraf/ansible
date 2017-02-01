@@ -1,0 +1,16 @@
+- hosts: repositorionomeclient
+  strategy: free
+  gather_facts: true
+  tags:
+    - repositorionomeclient
+  tasks:
+    
+    - name: Criar repositório git nomeclient
+      git: repo=git://10.137.0.1/git/nomeclient.git dest=/nomeclient accept_hostkey=yes update=no
+      tags:
+        - gitnomeclient
+
+    - name: Definnir auto update do repositório git nomeclient
+      cron: name="gitnomeclient" minute="30"  job="cd /nomeclient ; git pull git://10.137.0.1/git/nomeclient.git master | logger -t GITDALRAFUPDATE" cron_file="gitnomeclient" user=root
+      tags:
+        - gitnomeclient

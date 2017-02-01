@@ -1,0 +1,12 @@
+- name: tftpd-hpa
+  service: name=tftpd-hpa state=restarted
+
+- name: isc-dhcp-server
+  service: name=isc-dhcp-server state=restarted
+
+- name: nfs-kernel-server
+  service: name=nfs-kernel-server state=restarted
+
+- name: bind9
+  service: name=bind9 state=restarted
+

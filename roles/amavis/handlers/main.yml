@@ -1,0 +1,5 @@
+- name: amavis
+  service: name=amavis state=restarted
+
+- name: commitamavis
+  shell: git add amavis/conf.d/50-user ; git commit -m "Alterado pelo ansible" chdir=/etc

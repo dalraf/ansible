@@ -1,0 +1,103 @@
+- name: Instalar pacotes dhcp/pxe
+  apt: name={{ item }} state=present
+  with_items: "{{packagespxe}}"
+
+- name: Instalar pacotes wpad
+  apt: name={{ item }} state=present
+  with_items: "{{packageswpad}}"
+
+- name: Verificar o status do serviço nfs
+  service: name=nfs-kernel-server state=started enabled=yes
+
+- name: Verificar o status do serviço tftpd-hpa
+  service: name=tftpd-hpa state=started enabled=yes
+
+- name: Verificar o status do serviço isc-dhcp-server
+  service: name=isc-dhcp-server state=started enabled=yes
+
+- name: Definir diretório clonework
+  file: path=/opt/clonework state=directory mode=0644 owner=root group=root
+  when: clonezilla
+
+- name: Definir diretório clonework/iso
+  file: path=/opt/clonework/iso state=directory mode=0644 owner=root group=root
+  when: clonezilla
+
+- name: Definir diretório tftpboot/clonezilla
+  file: path=/var/lib/tftpboot/clonezilla state=directory mode=0644 owner=root group=root
+  when: clonezilla
+
+- name: Download da iso do clonezilla
+  command: /usr/bin/wget -O /opt/clonework/clonezilla{{versao}}.iso "http://downloads.sourceforge.net/project/clonezilla/clonezilla_live_stable/2.2.2-32/clonezilla-live-2.2.2-32-i686-pae.iso?r=http%3A%2F%2Fclonezilla.org%2Fdownloads%2Fdownload.php%3Fbranch%3Dstable&ts=1396441785&use_mirror=heanet" creates=/opt/clonework/clonezilla{{versao}}.iso chdir=/opt/clonework/iso
+  when: clonezilla
+
+- name: Copiar arquivos do clonezilla para tftpboot
+  shell: umount /opt/clonework/iso ; mount -o loop /opt/clonework/clonezilla{{versao}}.iso /opt/clonework/iso && cp -ar /opt/clonework/iso/live/* /var/lib/tftpboot/clonezilla && umount /opt/clonework/iso && touch {{execfileclone}}  creates={{execfileclone}} chdir=/opt
+  notify: tftpd-hpa
+  when: clonezilla
+
+- name: Definir permissão do tftpboot/clonezilla
+  file: path=/var/lib/tftpboot/clonezilla state=directory mode=0755 owner=root group=root
+  when: clonezilla
+
+- name: Definir diretório rescuework
+  file: path=/opt/rescuework state=directory mode=0644 owner=root group=root
+  when: syscd
+
+- name: Definir diretório rescuework/iso
+  file: path=/opt/rescuework/iso state=directory mode=0644 owner=root group=root
+  when: syscd
+
+- name: Definir diretório tftpboot/rescuework
+  file: path=/var/lib/tftpboot/rescue state=directory mode=0644 owner=root group=root
+  when: syscd
+
+- name: Download da imagem iso SRCD
+  command: /usr/bin/wget -O /opt/rescuework/rescue{{versao}}.iso "http://downloads.sourceforge.net/project/systemrescuecd/sysresccd-x86/4.4.0/systemrescuecd-x86-4.4.0.iso?r=http%3A%2F%2Fwww.sysresccd.org%2F&ts=1413375978&use_mirror=ufpr" creates=/opt/rescuework/rescue{{versao}}.iso chdir=/opt/rescuework/iso
+  when: syscd
+
+- name: Copiar arquivos do SRCD
+  shell: umount /opt/rescuework/iso ; mount -o loop /opt/rescuework/rescue{{versao}}.iso /opt/rescuework/iso && cp -ar /opt/rescuework/iso/isolinux/initram.igz /var/lib/tftpboot/rescue && cp -ar /opt/rescuework/iso/isolinux/rescue32 /var/lib/tftpboot/rescue && cp -ar /opt/rescuework/iso/isolinux/rescue64 /var/lib/tftpboot/rescue && cp -ar /opt/rescuework/iso/ntpasswd /var/lib/tftpboot && cp -ar /opt/rescuework/iso/bootdisk/memtestp /var/lib/tftpboot && cp -ar /opt/rescuework/iso/bootdisk/freedos.img /var/lib/tftpboot && cp -ar /opt/rescuework/iso/isolinux/memdisk  /var/lib/tftpboot && cp -ar /opt/rescuework/iso/sysrcd.dat /var/www/html && cp -ar /opt/rescuework/iso/sysrcd.md5 /var/www/html && umount /opt/rescuework/iso && touch {{execfilerescue}}  creates={{execfilerescue}} chdir=/opt
+  notify: tftpd-hpa
+  when: syscd
+
+- name: Definir permissão do tftpboot/rescue
+  file: path=/var/lib/tftpboot/rescue state=directory mode=0755 owner=root group=root
+  when: syscd
+
+- name: Definir permissão do tftpboot/ntpasswd
+  file: path=/var/lib/tftpboot/ntpasswd state=directory mode=0755 owner=root group=root
+  when: syscd
+
+- name: Definir arquivo default do tftp
+  template: src=tftpd-hpa.j2 dest=/etc/default/tftpd-hpa mode=0644 owner=root group=root
+  notify: tftpd-hpa
+
+- name: Definir configurações do servidor dhcp
+  template: src=dhcpd.conf.j2 dest=/etc/dhcp/dhcpd.conf mode=0644 owner=root group=root
+  notify: isc-dhcp-server
+
+- name: Definir diretório tftpboot/pxelinux.cfg
+  file: path=/var/lib/tftpboot/pxelinux.cfg state=directory mode=0755 owner=root group=root
+
+- name: Definir menu padrão do pxe
+  template: src=defaultpxe.j2 dest=/var/lib/tftpboot/pxelinux.cfg/default mode=0644 owner=root group=root
+  notify: tftpd-hpa
+
+- name: Copiar pxelinux.0 para tftpboot
+  copy: dest=/var/lib/tftpboot/pxelinux.0 src=pxelinux.0/ mode=0777 owner=root group=root
+
+- name: Copiar menu.c32 para tftpboot
+  copy: dest=/var/lib/tftpboot/menu.c32 src=menu.c32 mode=0777 owner=root group=root
+
+- name: Definir arquivo /etc/exports
+  template: src=exportspxe.j2 dest=/etc/exports mode=0644 owner=root group=root
+  notify: nfs-kernel-server
+
+- name: Criar diretório home/partimag
+  file: path=/home/partimag state=directory mode=0777 owner=root group=root
+
+- name: Criar arquivo wpad
+  template: src=wpad.j2 dest=/var/www/html/wpad.dat mode=0644 owner=root group=root
+  tags:
+    - wpad

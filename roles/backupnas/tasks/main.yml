@@ -1,0 +1,41 @@
+#- name: remove pacote puppet
+#  package: name={{ item }} state=absent
+#  with_items: "{{puppetpackages}}"
+
+- name: Instalar pacotes basicos ubuntu 10.04
+  apt: name=moreutils state=present
+  when: (( ansible_distribution_version == "10.04" ))
+
+- name: Definir script de backup
+  template: src=scriptbackupsemana.j2 dest=/nomeclientutils/scriptbackupsemana mode=0755 owner=root group=root
+  tags:
+    - scriptbackup
+
+
+- name: Definir cron para o backup
+  template: src=cronbcksemana.j2 dest=/etc/cron.d/backupsemana mode=0644 owner=root group=root
+  register: cronbcksemanaresult
+  notify: cron
+  when: ( usecron == true )
+
+- name: remover cron para o backup
+  file: path=/etc/cron.d/backupsemana state=absent
+  notify: cron
+  when: ( usecron == false )
+
+- name: remover arquivo old de backup
+  file: path=/etc/cron.d/bcknomeclientsemana state=absent
+  notify: cron
+
+- name: Definir rotate de log de backup
+  template: src=backuprotate.j2 dest=/etc/logrotate.d/backuprotate mode=0644 owner=root group=root
+  register: backuprotatefile
+
+- name: Definir script para ver log de backup
+  template: src=viewbackuplog.j2 dest=/usr/bin/viewbackuplog mode=0755 owner=root group=root
+
+- name: Verificar alteração de arquivo
+  include: libs/commit.yml result={{ item.result }} arquivo={{ item.arquivo }}
+  with_items:
+    - { result: "{{ cronbcksemanaresult }}" , arquivo: "/etc/cron.d/backupsemana" }
+    - { result: "{{ backuprotatefile }}" , arquivo: "/etc/logrotate.d/backuprotate" }

@@ -1,0 +1,19 @@
+usecron: true
+usebackdifere: "false"
+pastafull: "indefinido"
+rsyncpasswd: "123456"
+destino: ['rsync://netbackup@192.168.22.3/NetBackup']
+horariobackup: ["30 21",]
+temp: "/tmp"
+onemount: false
+scriptbcklocal: "/nomeclientutils/scriptbackupsemana"
+cmdprep: "true"
+diassemanas: {1: { nome: 'seg', arquivos: '/home /etc /var/log/audit'}, 2: { nome: 'ter', arquivos: '/home /etc /var/log/audit'}, 3: { nome: 'qua', arquivos: '/home /etc /var/log/audit'}, 4: { nome: 'qui', arquivos: '/home /etc /var/log/audit'}, 5: { nome: 'sex', arquivos: '/home /etc /var/log/audit'}}
+
+puppetpackages: ["puppet","puppet-common","facter","hiera"]
+cronbcksemanaresult: ""
+monitornomeclient: false
+usedisco:  false
+usedrbd: false
+usebackup:  true
+limitetransf: ""

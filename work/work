@@ -1,0 +1,5 @@
+[work]
+192.168.4.250 ansible_user=root ansible_port=5252 ansible_ssh_pass=senhassh ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q root@10.137.2.142"'
+192.168.2.250 ansible_user=root ansible_port=5252 ansible_ssh_pass=senhassh ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q root@10.137.2.42"'
+
+

@@ -1,0 +1,4 @@
+- hosts: syncservers
+  strategy: free
+  roles:
+    - syncserver

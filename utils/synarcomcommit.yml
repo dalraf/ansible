@@ -1,0 +1,9 @@
+- hosts: servidores
+  strategy: free
+  gather_facts: false
+  tags:
+    - syncnomeclientcommit
+  tasks:
+    - name: Commit syncnomeclient
+      shell: git add cron.d/syncnomeclient ; git commit -m "Alteração do synnomeclient" chdir=/etc
+      ignore_errors: yes

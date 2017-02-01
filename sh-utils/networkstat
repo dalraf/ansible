@@ -1,0 +1,57 @@
+#!/bin/bash
+
+function iograh(){
+tshark  -qi ${1} -z'io,stat,600,${2}'
+}
+
+
+function rtpgraph(){
+
+tshark -qi ${1} -z rtp,streams
+
+}
+
+function arvore(){
+
+tshark -qi ${1} io,phs
+
+}
+
+function perdaconv(){
+
+tshark  -qi ${1} -z 'conv,tcp,tcp.analysis.lost_segment'
+
+}
+
+function perdagraph(){
+
+
+tshark -qni ${1}  -z io,stat,600,0,"COUNT(tcp.analysis.retransmission) tcp.analysis.retransmission,\
+COUNT(tcp.analysis.duplicate_ack)tcp.analysis.duplicate_ack,\
+COUNT(tcp.analysis.lost_segment) tcp.analysis.lost_segment,\
+COUNT(tcp.analysis.fast_retransmission) tcp.analysis.fast_retransmission"
+
+}
+
+
+function capturenet(){
+ngrep -iqd $1 "$2"
+}
+
+function webtree(){
+tshark -qi $1 -z 'http_srv,tree'
+}
+
+function iptree(){
+tshark -qi $1 -z 'dests,tree'
+}
+
+function iortt (){
+
+tshark -q -r $1 -z io,stat,60,"AVG(tcp.analysis.ack_rtt)tcp.analysis.ack_rtt&&!ip.src==${2}" 
+
+}
+
+
+
+eval ${1} ${2} ${3}

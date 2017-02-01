@@ -1,0 +1,3 @@
+#!/bin/bash
+echo " use ocsweb; select hardware.name as Nome ,OSNAME as OS,PROCESSORT as Processador ,MEMORY as Memoria,storages.name as Disco,floor(storages.disksize/1024) as Tamanho from hardware INNER JOIN storages on hardware.id=storages.hardware_id where storages.type='Fixed hard disk media' INTO OUTFILE '/tmp/hardware.csv';" | mysql -p
+mv /tmp/hardware.csv .

@@ -1,0 +1,14 @@
+[libdefaults]
+	default_realm = {{ dominio.upper() }}
+	
+[realms]
+	 DALRAFINF.LOCAL = {
+		kdc = {{ servidordc }}.{{ dominio }}
+		admin_server = {{ servidordc }}.{{ dominio }}
+	}
+
+		
+[domain_realm]
+	{{ servidordc }}.{{ dominio }} = {{ dominio.upper() }}
+	.{{ dominio }} = {{ dominio.upper() }}
+	{{ dominio }} = {{ dominio.upper() }}

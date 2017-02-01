@@ -1,0 +1,5 @@
+{% if master %}
+{% for i in peerssync %}
+* * * * * 	root 	{{diretoriobase}}/{{ i }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,9 @@
+- hosts: srv-nomeclient-pac1 srv-nomeclient-pac3 srv-nomeclient-pac2
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Download pfsense
+      shell: wget -O /opt/pfsense.iso "https://atxfiles.pfsense.org/mirror/downloads/pfSense-CE-2.3-RELEASE-amd64.iso.gz"
+      ignore_errors: no

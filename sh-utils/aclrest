@@ -1,0 +1,2 @@
+#!/bin/bash
+setfacl --restore=${1}

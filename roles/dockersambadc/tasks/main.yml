@@ -1,0 +1,89 @@
+
+- name: Criar diretório de build
+  file: path=/nomeclientutils/sambadocker state=directory mode=0755 owner=root group=root
+
+- name: Criar diretório sysvol
+  file: path={{ sysvol }} state=directory mode=0755 owner=root group=root
+
+- name: Criar diretório netlogon
+  file: path={{ netlogon }} state=directory mode=0755 owner=root group=root
+
+- name: Cria arquivo Dockerfile Samba
+  template: src=dockerfilesamba.j2 dest=/nomeclientutils/sambadocker/dockerfilesamba mode=0644 owner=root group=root
+
+- name: Cria arquivo Dockerfile Cron
+  template: src=dockerfilecron.j2 dest=/nomeclientutils/sambadocker/dockerfilecron mode=0644 owner=root group=root
+
+- name: Cria arquivo setup
+  template: src=setup.j2 dest=/nomeclientutils/sambadocker/setup mode=0755 owner=root group=root
+
+- name: Instalar arquivo hosts
+  template: src=hosts.j2 dest=/nomeclientutils/sambadocker/hosts mode=0644 owner=root group=root
+
+- name: Instalar arquivo krb5.conf
+  template: src=krb5.conf.j2 dest=/nomeclientutils/sambadocker/krb5.conf mode=0644 owner=root group=root
+
+- name: Instalar arquivo samba/smb.conf
+  template: src=smb.conf.j2 dest=/nomeclientutils/sambadocker/smb.conf mode=0644 owner=root group=root
+
+- name: Instalar arquivo supervisord.conf
+  template: src=supervisord.conf.j2 dest=/nomeclientutils/sambadocker/supervisord.conf mode=0644 owner=root group=root
+
+- name: Instalar o cron do rsync sysvol
+  template: src=cronsysvolrsync.j2 dest=/nomeclientutils/sambadocker/cronsysvolrsync mode=0644 owner=root group=root
+
+- name: Instalar o  rsync sysvol
+  template: src=sysvolrsync.j2 dest=/nomeclientutils/sambadocker/sysvolrsync mode=0755 owner=root group=root
+
+- name: Copia arquivo nsswitch.conf
+  copy: dest=/nomeclientutils/sambadocker/nsswitch.conf src=nsswitch.conf mode=0644 owner=root group=root
+
+- name: Cria arquivo dnscorrect
+  template: src=dnscorrect.j2 dest=/nomeclientutils/sambadocker/dnscorrect mode=0755 owner=root group=root
+
+- name: Cria arquivo build
+  template: src=build.j2 dest=/nomeclientutils/sambadocker/build mode=0755 owner=root group=root
+
+
+
+#- name: Adicionar redirecionamento de domínio
+#  blockinfile:
+#    state: present
+#    dest: /nomeclientutils/sambadocker/named.conf.local
+#    marker: "// {mark} Redirecionamento de domínio"
+#    block: |
+#      zone {{ dominio }} {
+#      type forward;
+#      forwarders {
+#      {{ ipservidordc }};
+#      };
+#      forward only;
+#      };
+#
+#      zone {{ enderecoreverson }}.in-addr.arpa {
+#      type forward;
+#      forwarders {
+#      {{ ipservidordc }};
+#      };
+#      forward only;
+#      };
+
+#- name: Desativar dnssec no bind9
+#  lineinfile: dest=/etc/bind/named.conf.options regexp="dnssec-validation" line="\tdnssec-validation no;" state=present
+#  notify: 
+#      - bind9 
+#  when: usebindredirect
+
+- name: Verificar se fstab já foi alterado
+  shell: grep "errors=remount-ro,acl,user_xattr,usrquota,grpquota" /etc/fstab  chdir=/etc
+  register: fstabchange
+  failed_when: ( fstabchange.rc not in [ 0, 1 ] )
+  ignore_errors: yes
+  tags:
+    - fstab
+
+- name: Alterar /etc/fstab
+  shell:  sed -i 's/errors=remount-ro/errors=remount-ro,acl,user_xattr,usrquota,grpquota/' /etc/fstab  && /bin/mount -o remount /  chdir=/etc
+  when: fstabchange.rc != 0
+  tags:
+    - fstab

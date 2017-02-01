@@ -1,0 +1,12 @@
+[supervisord]
+autostart=true
+autorestart=true
+nodaemon=true
+
+[program:samba]
+command = /usr/sbin/samba -i
+
+[program:cron]
+command = cron -f -l -L 15
+autostart=true
+autorestart=true

@@ -1,0 +1,2 @@
+#!/bin/bash
+ansible-playbook -i /nomeclient/ansible/hosts /nomeclient/ansible/site.yml  -f 10 | logger -t ANSIBLERUN

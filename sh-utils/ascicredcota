@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ -z "$1" ] 
+then
+    echo "ascicredquota grupo diretorio tamanhoemmb pontodemontagem"
+    exit 0
+else
+    chgrp -R $1 "$2"
+    chmod -R g+s "$2"
+    setquota -g $1  $(($3 * 1024)) $(($3 * 1024)) 0 0 $4    
+    repquota -g -v $4
+fi

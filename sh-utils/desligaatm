@@ -1,0 +1,35 @@
+#!/bin/bash
+[ -z "$*" ] && echo "Uso: [execute|install] \"ip1 ip2\" \"hora\" " && exit 0
+cronfile="/etc/cron.d/desligaatm"
+restartcron="service cron restart"
+comando="$1"
+atms="$2"
+hora="$3"
+
+if [[ "$1" == "install" ]]
+then
+    echo "
+#desligaatm
+00 $hora * * * root /base/utils/desligaatm execute \"$atms\"
+#
+" >> $cronfile
+    $restartcron
+fi
+
+
+if [[ "$1" == "remove" ]]
+then
+    rm $cronfile
+    $restartcron
+fi
+
+
+if [[ "$1" == "execute" ]]
+then
+
+    for i in $atms
+    do 
+	ping -c 4 -w 10 $i > /dev/null &&  ssh -p 22 $i "poweroff"
+    done
+
+fi

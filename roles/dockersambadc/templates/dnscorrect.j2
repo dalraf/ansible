@@ -1,0 +1,5 @@
+#!/bin/bash
+samba-tool dns add {{ servidordc }}.{{ dominio }} {{ dominio }} {{ servidorlinux }}.{{ dominio }} A {{ ipservidorlinux }} -U{{ usuario }} --password {{ password }}
+cnamelinux=$(ldbsearch -H /var/lib/samba/private/sam.ldb '(invocationId=*)' --cross-ncs objectguid | grep -i -A 1 {{ servidorlinux }} | grep -i objectguid | cut -f 2 -d ":" )
+samba-tool dns add {{ servidordc }}.{{ dominio }}  _msdcs.{{ dominio }} $cnamelinux CNAME {{ servidorlinux }}.{{ dominio }} -U{{ usuario }} --password {{ password }}
+

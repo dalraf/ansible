@@ -1,0 +1,5 @@
+usesync: false
+nagiosbackupresult: "/nomeclientutils/nagiosstate"
+syncnagioserro: "/nomeclientutils/nagiosstatesync"
+logbackup: "/var/log/backupnomeclient.log"
+diretoriobase: "/nomeclientutils"

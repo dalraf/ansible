@@ -1,0 +1,12 @@
+- name: cron
+  service: name=cron state=restarted
+
+- name: ssh
+  service: name=ssh state=restarted
+
+- name: nrpe 
+  command: /bin/bash -c "killall nrpe;/etc/init.d/nagios-nrpe-server start"
+
+- name: sysclt
+  command: /sbin/sysctl -p /etc/sysctl.conf
+

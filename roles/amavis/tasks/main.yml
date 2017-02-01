@@ -1,0 +1,24 @@
+  - name: Definir linha de email white
+    set_fact: linewhite="@whitelist_sender_maps = ( [{{emamilsstrwhite}}] );"
+
+  - name: Definir linha de email black
+    set_fact: lineblack="@blacklist_sender_maps = ( [{{emamilsstrblack}}] );"
+
+
+  - name: Adicionar site white
+    lineinfile: dest=/etc/amavis/conf.d/50-user regexp="@whitelist_sender_maps =" line="{{linewhite}}" insertafter="# White list para remetentes" state=present
+    when: usewhiteemail
+    notify: 
+      - amavis
+      - commitamavis
+
+  - name: Adicionar site black
+    lineinfile: dest=/etc/amavis/conf.d/50-user regexp="@blacklist_sender_maps =" line="{{lineblack}}" insertafter="# White list para remetentes" state=present
+    when: useblackemail
+    notify: 
+      - amavis
+      - commitamavis
+
+
+
+

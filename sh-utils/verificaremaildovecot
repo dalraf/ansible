@@ -1,0 +1,8 @@
+#!/bin/bash
+valor1=$(cat $1  | sed 's/$'"/`echo \\\r`/"  | wc -c)
+valor2=$(echo "$1" | sed -r 's/^.*W=([0-9]+):.*$/\1/')
+if [[ "$valor1" != "$valor2" ]]
+    then
+    echo $1
+    mv $1 /opt/lucioscript
+fi

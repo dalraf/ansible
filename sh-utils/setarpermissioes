@@ -1,0 +1,28 @@
+#!/bin/bash
+setfacl -R -b "$1"
+
+for i in $2
+do
+	setfacl -R -m  g:$i:rwx "$1"
+	setfacl -R -m  default:g:$i:rwx "$1"
+done
+
+for i in $3
+do
+	setfacl -R -m  u:$i:rwx "$1"
+	setfacl -R -m  default:u:$i:rwx "$1"
+done
+
+
+for i in $4
+do
+	setfacl -R -m  g:$i:rx "$1"
+	setfacl -R -m  default:g:$i:rx "$1"
+done
+
+for i in $5
+do
+	setfacl -R -m  u:$i:rx "$1"
+	setfacl -R -m  default:u:$i:rx "$1"
+done
+

@@ -1,0 +1,50 @@
+- hosts: servidores
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars:
+    removergit:
+      - { arquivo: 'webmin', mensagem: 'Removido webmin' }
+      - { arquivo: 'apparmor.d', mensagem: 'Removido apparmor' }
+
+
+  tasks:
+
+    - name: Adicionado linha no .gitignore
+      lineinfile: dest=/etc/.gitignore regexp="{{item.arquivo}}" line="{{item.arquivo}}"
+      with_items: "{{removergit}}"
+
+    - name: Verificar status etc
+      shell: git status | grep "working directory clean" chdir=/etc
+      register: statusetcgitnomeclient
+      ignore_errors: yes
+
+    - block:
+      
+      - name: Commit do .gitignore
+        shell: git add .gitignore ; git commit -m "Removido arquivos problematicos" chdir=/etc
+        ignore_errors: yes
+        register: outputsaidaetc
+
+
+      - name: Commit programado
+        shell: git add {{ item.arquivo }} ; git commit -m "{{ item.mensagem }}" chdir=/etc
+        ignore_errors: yes
+        with_items:
+          - { arquivo: 'squid', mensagem: 'Alteração do squid' }
+          - { arquivo: 'postfix', mensagem: 'Alteração do postfix' }
+          - { arquivo: 'nagios', mensagem: 'Alteração de nrpe' }
+          - { arquivo: 'openfire/available-plugins.xml', mensagem: 'Update do openfire' }
+        register: outputsaidaetc
+
+    
+      - name: Remover arquivos
+        shell: git rm -r --cached {{ item.arquivo }} ; git commit -m "{{ item.mensagem }}" chdir=/etc
+        with_items: "{{removergit}}"
+        ignore_errors: yes
+        register: outputsaidaetc
+      
+      when: statusetcgitnomeclient.rc != 0
+
+ 

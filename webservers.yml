@@ -1,0 +1,8 @@
+- hosts: webservers
+  strategy: free
+  gather_facts: false
+  tags:
+    - webservers
+  roles:
+    - dockerinstall
+    - dockerwebserver

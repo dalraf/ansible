@@ -1,0 +1,7 @@
+- hosts: saltservers
+  strategy: free
+  gather_facts: false
+  tags:
+    - salt
+  roles:
+    - salt

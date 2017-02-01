@@ -1,0 +1,7 @@
+- hosts: boothosts
+  strategy: free
+  gather_facts: yes
+  tags:
+    - basicubuntu
+  roles:
+    - basicubuntu

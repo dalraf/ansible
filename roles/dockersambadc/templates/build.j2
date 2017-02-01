@@ -1,0 +1,14 @@
+#!/bin/bash
+docker rm -f sambaconf
+docker rm -f sambafinalexec
+docker rm -f sambacronfinalexec
+docker build -t sambasetup -f dockerfilesamba .
+docker build -t sambacronsetup -f dockerfilecron .
+docker run -it --net=host --privileged -v /home:/home -v /nomeclientutils/sambadocker/smb.conf:/etc/samba/smb.conf --name sambaconf sambasetup /usr/bin/samba-tool domain join {{dominio }} DC --realm={{ dominio.upper() }}  -U "administrador"  -W {{ dominio }} --password="{{ password }}"
+docker commit sambaconf sambafinal
+docker run -it -d --restart unless-stopped --net=host --privileged -v /home:/home -v /nomeclientutils/sambadocker/smb.conf:/etc/samba/smb.conf --name sambafinalexec sambafinal /usr/sbin/samba -i
+docker run -it -d --restart unless-stopped -v /home:/home --name sambacronfinalexec sambacronsetup cron -f -l -L 15
+sleep 10
+docker exec -it sambafinalexec /dnscorrect
+docker exec -it sambafinalexec samba-tool ntacl sysvolreset
+

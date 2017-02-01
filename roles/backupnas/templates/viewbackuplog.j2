@@ -1,0 +1,2 @@
+#!/bin/bash
+( for i in $(ls -tr {{ logbackup }}*gz 2>/dev/null) ; do [ -f $i ] && zcat $i  ; done ; [ -f {{ logbackup }}.1 ] && cat {{ logbackup }}.1 ; [ -f {{ logbackup }} ] && cat {{ logbackup }} )

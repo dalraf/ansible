@@ -1,0 +1,8 @@
+#!/bin/bash
+if ping -c 4 -w 20 -W 10 10.128.0.18 > /dev/null 2>&1
+then
+    ip route add 192.168.213.0/25 via 10.128.0.2
+else
+    ip route del 192.168.213.0/25 via 10.128.0.2
+fi
+

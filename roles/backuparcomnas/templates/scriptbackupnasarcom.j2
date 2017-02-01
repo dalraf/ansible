@@ -1,0 +1,23 @@
+#!/bin/bash
+echo 4 > {{ nagiosbackupresult }}
+if  ps aux | grep -v "grep" | egrep  "*dd.*gzip.*$" > /dev/null 2>&1; then
+    logger -t BCKDALRAF "Script de backup NAS da nomeclient está sendo executado: saindo"
+    exit 1
+fi
+
+tar -czf {{nasmountpoint}}/pve.tar.gz /etc/pve
+
+vgcfgbackup -f {{nasmountpoint}}/bck{{vggroup}} {{vggroup}}
+
+{% for i in lvmdevices %}
+lvcreate -L{{tamanholvmsnap}} -s -n {{i}}snapbck {{prefixlvm}}/{{i}}
+if dd if={{prefixlvm}}/{{i}}snapbck | gzip -c | dd of={{nasmountpoint}}/{{i}}snapbck.gz  >> {{ logbackup }} 2>&1
+then
+        echo 0 > {{ nagiosbackupresult }}
+	echo  "Backup do {{ i }} em $1 efetuado com sucesso" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ logbackup }} 2>&1
+else
+        echo 2 > {{ nagiosbackupresult }}
+	echo  "Backup do {{ i }} em $1 efetuado com erro" | awk '{ print strftime("%d/%m/%Y %H:%M:%S: "), $0; fflush(); }' | tee -a {{ logbackup }} 2>&1
+fi
+lvremove -f {{prefixlvm}}/{{i}}snapbck
+{% endfor %}

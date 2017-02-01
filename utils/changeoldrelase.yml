@@ -1,0 +1,11 @@
+- hosts: all
+  gather_facts: true
+  tags:
+    - oldrelease
+  tasks:
+    - name: Renomeia repositorio para old
+      shell: sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && git commit -a -m "Alterado pelo ansible" chdir=/etc
+      when: (( ansible_distribution_release  == "lucid" ))
+  
+  
+

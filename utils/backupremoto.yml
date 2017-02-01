@@ -1,0 +1,5 @@
+- hosts: rsnapshotservers
+  strategy: free
+  roles:
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01000000" , enderecoservidor: "root@srv-nomeclient.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90",}
+    - { role: backupremoto , usecron: true, client: "nomeclient" , servidor: "lnx01000000" , enderecoservidor: "root@srv-nomeclient.nomeclientinf.remote:/home",  crontabdef: " 0  21  * * *", dias: "90",}

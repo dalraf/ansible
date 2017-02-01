@@ -1,0 +1,2 @@
+chgrp -R usuario diretório
+chmod -R g+s diretório

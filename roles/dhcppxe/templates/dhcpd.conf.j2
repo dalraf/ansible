@@ -1,0 +1,15 @@
+{% if useproxy %}
+option wpad code 252 = text;
+option wpad "http://{{ ipinterfacelocal }}{{ portaweb }}/wpad.dat\n";
+{% endif %}
+subnet  {{ subnet }} netmask {{ mascara }}  {
+       	authoritative;
+	range {{ rangeinicio }} {{ rangefim }};
+	option domain-name-servers {{ dnsserver }};
+	option domain-name "{{ nomedodominio }}";
+	option domain-search "{{ dnssearch }}";
+	option routers {{ roteador }};
+	default-lease-time  604800;
+	max-lease-time 1209600;
+	{% if enablepxe %}filename "pxelinux.0";{% endif %}
+}

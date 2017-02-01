@@ -1,0 +1,2 @@
+#!/bin/bash
+ curl "$1" | egrep "http[s]?://" | sed -r 's,^.*http[s]?://([0-9a-z.]+)/?.*$,\1,' | sort | uniq

@@ -1,0 +1,39 @@
+#!/bin/bash
+source /base/base/functions
+source /base/base/servicedefine
+source /base/base/base.cfg
+source /etc/base/base.cfg
+source /base/base/basepost.cfg
+diretoriobackup="/opt/bckconfs"
+! [ -d $diretoriobackup ] && mkdir $diretoriobackup >/dev/null 2>&1
+if tar -czf ${diretoriobackup}/etc.tar.gz /etc >/dev/null 2>&1 
+then
+    echo "Backup do etc feito com sucesso"
+else
+    echo "Backup do etc não realizado"
+fi
+
+databasesmysql=$(mysql -b --user=$usuariomysql --password=$passwordmysql --execute "show databases" 2> $diretoriopadrao/loglastbackup)
+if [[ $? == 0 || $? == 2 ]]
+then
+    echo "Busca de bancos mysql efetuada sem erro"
+else
+    echo "Busca de bancos mysql efetuada com erro"
+fi
+databasesmysql=$(echo "$databasesmysql" | egrep -v "mysql|information_schema|Database")
+for i in $databasesmysql
+do
+    if mysqldump --user=$usuariomysql --password=$passwordmysql $i > $diretoriobackup/$i.sql 2> $diretoriopadrao/loglastbackup 
+    then
+	listabckmysql="$listabckmysql $diretoriobackup/$i.sql "
+    else
+	echo "Erro no backup do mysql" 
+    fi
+done
+
+if tar -czf /opt/bckconfs.tar.gz /opt/bckconfs >/dev/null 2>&1 
+then 
+    echo "Arquivo gerado sucesso" 
+else
+    echo "Arquivos não gerado"
+fi

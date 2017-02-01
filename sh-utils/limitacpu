@@ -1,0 +1,52 @@
+#!/bin/bash
+[ -z "$*" ] && echo "Uso: [execute|install] serviço nomedaimagem cpulimit" && exit 0
+cronfile="/etc/cron.d/limitacpu"
+restartcron="service cron restart"
+comando="$1"
+servicename="$2"
+programaname="$3"
+cpulimit="$4"
+
+if [[ "$1" == "install" ]]
+then
+    echo "
+#limitacpu
+05 * * * * root /base/utils/limitacpu execute $servicename $programaname $cpulimit
+#
+" >> $cronfile
+    $restartcron
+fi
+
+
+if [[ "$1" == "remove" ]]
+then
+    rm $cronfile
+    $restartcron
+fi
+
+
+if [[ "$1" == "execute" ]]
+then
+    function pegacpu() {
+	ps -o %cpu -p $(pidof $programaname) | tail -n 1 | cut -f 1 -d "."
+    }
+    for n in $(seq 1 5)
+    do 
+	if (( $(pegacpu) > $cpulimit ))
+	then
+	    if (( $n > 3 ))
+	    then
+		service $servicename stop
+		for i in $(pidof $programaname)
+		do
+		    kill -kill $i
+		done
+		service $servicename start
+		break
+	    fi
+	    sleep 10
+	else
+	    break
+	fi
+    done	
+fi

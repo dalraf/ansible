@@ -1,0 +1,6 @@
+#!/bin/bash
+echo -e "[proxmox]\n$1 ansible_port=22 ansible_ssh_pass=123456" > /tmp/proxmoxhosts 
+ansible-playbook  -i /tmp/proxmoxhosts --limit "$1"  /nomeclient/ansible/atualizacache.yml
+ansible-playbook  -i /tmp/proxmoxhosts --limit "$1"  /nomeclient/ansible/proxmox.yml
+#echo -e "[raid10]\n$1 ansible_ssh_pass=123456" > /tmp/raid10hosts
+#ansible-playbook  -i /tmp/raid10hosts --limit "$1"  /nomeclient/ansible/installraid10.yml

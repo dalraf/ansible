@@ -1,0 +1,15 @@
+
+- name: Criar diretório de build
+  file: path=/nomeclientutils/saltdocker state=directory mode=0755 owner=root group=root
+
+- name: Cria arquivo Dockerfile Salt
+  template: src=dockerfilesalt.j2 dest=/nomeclientutils/saltdocker/dockerfilesalt mode=0644 owner=root group=root
+
+- name: Cria arquivo salt master
+  template: src=master.j2 dest=/nomeclientutils/saltdocker/master mode=0644 owner=root group=root
+
+- name: Criando image do salt
+  shell: docker build -t salt-master -f /nomeclientutils/saltdocker/dockerfilesalt . chdir=/nomeclientutils/saltdocker
+
+- name: Criando container do salt
+  shell: docker run --restart unless-stopped -it -d -p 4505:4505 -p 4506:4506 --name salt-master salt-master

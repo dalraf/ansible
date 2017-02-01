@@ -1,0 +1,36 @@
+- hosts: raid10
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: True
+  vars:
+    discoprimario: "/dev/sda"
+    discosecundarios: ["/dev/sdb","/dev/sdc","/dev/sdd"]
+  tasks:
+
+    - name: Verifica md0 existe
+      shell: mdadm --query --detail /dev/md0
+      ignore_errors: yes
+      register: raid10
+
+    - name: Copiar esquema de disco primario
+      shell: /nomeclient/utils/copiargpt {{ discoprimario }} {{ item }}
+      with_items: "{{ discosecundarios }}"
+      when: raid10.rc != 0
+
+    - name: Copiar particao 1 do primario para o secundario
+      shell: dd if={{ discoprimario }}1 of={{ item }}1
+      with_items: "{{ discosecundarios }}"
+      when: raid10.rc != 0
+
+    - name: Copiar particao 2 do primario para o secundario
+      shell: dd if={{ discoprimario }}2 of={{ item }}2
+      with_items: "{{ discosecundarios }}"
+      when: raid10.rc != 0
+
+    - name: Adicionar raid 10
+      shell: mdadm --create -l 10 -n 4 /dev/md0 {% for i in discosecundarios %} {{ i }}3 {% endfor %} missing
+      when: raid10.rc != 0
+        
+
+  

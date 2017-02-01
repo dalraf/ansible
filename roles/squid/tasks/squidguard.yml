@@ -1,0 +1,32 @@
+- name: Instalar squidguard
+  apt: name=squidguard state=present
+
+- name: Download da Blacklist
+  command: /usr/bin/wget -O /opt/blacklist.tar.gz "http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=bigblacklist" creates=/opt/blacklist.tar.gz chdir=/opt
+
+- name: Descompactar Blacklist
+  command: /bin/tar -xzf blacklist.tar.gz chdir=/opt creates=/opt/blacklists
+
+- name: Copiar arquivos para o squidguard
+  shell: cp -ar /opt/blacklists/* /var/lib/squidguard/db chdir=/opt creates=/var/lib/squidguard/db/CATEGORIES
+
+- name: Corrige permissões
+  file: path=/var/lib/squidguard/db owner=proxy group=proxy recurse=yes mode=0755
+
+- name: Criar SquidGuard.conf
+  template: src=squidGuard.conf.j2 dest=/etc/squidguard/squidGuard.conf mode=0640 owner=proxy group=proxy
+  register: squidguardconf
+  notify: squid3
+
+- name: Adicionar linha a squid.conf
+  lineinfile: dest=/etc/squid3/squid.conf regexp="url_rewrite_program" line="url_rewrite_program /usr/bin/squidGuard" state=present
+  register: squidconf
+  notify: squid3
+
+- name: Verificar alteração de arquivo
+  include: libs/commit.yml result={{ item.result }} arquivo={{ item.arquivo }}
+  with_items:
+    - { result: "{{ squidguardconf }}" , arquivo: "/etc/squidguard/squidGuard.conf" }
+    - { result: "{{ squidconf }}" , arquivo: "/etc/squid3/squid.conf" }
+
+

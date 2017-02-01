@@ -1,0 +1,2 @@
+#!/bin/bash
+( cat /base/report/log.udevhotbackup ; zcat /base/report/log.udevhotbackup.gz ) 

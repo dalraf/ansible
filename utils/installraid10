@@ -1,0 +1,3 @@
+#!/bin/bash
+echo -e "[raid10]\n$1 ansible_ssh_pass=123456" > /tmp/raid10hosts
+ansible-playbook  -i /tmp/raid10hosts --limit "$1"  /nomeclient/ansible/installraid10.yml

@@ -1,0 +1,267 @@
+#!/bin/bash
+
+function log (){
+    logger -t NAGIOSDALRAF "$1"
+}
+
+
+function nagiosoutput() {
+    case $1 in
+        "0")
+            echo -e "$2"
+	    log "$2"
+            exit 0
+            ;;
+        "1")
+            echo -e "$2"
+	    log "$2"
+            exit 1
+            ;;
+        "2")
+            echo -e "$2"
+	    log "$2"
+            exit 2
+            ;;
+    esac
+}
+
+function testdiscos(){
+    discos=$(ls /dev/sd?)
+    for i in $(ls /dev/md? 2>/dev/null); do statusmd="$statusmd $(mdadm --query --detail $i | grep /dev )" ; done
+    j=0
+    for i in $discos
+    do
+	if echo $statusmd | grep $i > /dev/null 2>&1
+	    then
+	    smartctl -s on $i > /dev/null 2>&1
+	    j=$(( $j + 1 ))
+	    { smartctl -H $i  > /dev/null 2>&1; } && { resultdisco[$j]=0; mensagemdisco[$j]="OK"; } || { resultdisco[$j]=1; mensagemdisco[$j]="WARN"; } 
+	    fi
+    done
+    resultfinaldisco=0
+    for i in $(seq $j -1 1 )
+    do
+	(( $resultfinaldisco < ${resultdisco[$i]} )) && resultfinaldisco=${resultdisco[$i]}
+	mensagemfinaldisco="DISCO$(( ${i} -1 ))=${mensagemdisco[$i]} ${mensagemfinaldisco}"
+    done
+    resultados[$indice]="$resultfinaldisco"
+    mensagens[$indice]="$mensagemfinaldisco"
+}
+
+
+
+function testraid(){
+    raids=$(ls /dev/md? 2>/dev/null)
+    for i in $excluderaid
+    do
+	raids=$(echo $raids | sed "s,$i,,")
+    done
+    j=0
+    for i in $raids
+    do
+	j=$(( $j + 1 ))
+	estadoraid=$(mdadm --query --detail $i 2>/dev/nul | grep State | head -n 1)
+	[ "$estadoraid" == "" ] && estadoraid="invalid"
+	{ echo $estadoraid | egrep "clean|active"  > /dev/null; } && { resultraid[$j]=0; mensagemraid[$j]="OK"; } 
+	{ echo $estadoraid | egrep "degraded|invalid" > /dev/null; }  && { resultraid[$j]=2; mensagemraid[$j]="FAIL"; } 
+	{ echo $estadoraid | egrep "recovering|resyncing" > /dev/null; } && { resultraid[$j]=1; mensagemraid[$j]="RECOV"; }
+    done
+    resultfinalraid=0
+    for i in $(seq $j -1 1 )
+    do
+	(( $resultfinalraid < ${resultraid[$i]} )) && resultfinalraid=${resultraid[$i]}
+	mensagemfinalraid="RAID$(( ${i} -1 ))=${mensagemraid[$i]} ${mensagemfinalraid}"
+    done
+    resultados[$indice]="$resultfinalraid"
+    mensagens[$indice]="$mensagemfinalraid"
+}
+
+
+function testdrbd(){
+
+    mensagemdrbd=""
+    drbdstate=0
+    for i in $(drbdadm status | grep "resource " | sed -r 's/^.*minor="([0-9]+)" .*$/\1/')
+    do 
+	if drbdadm status | grep "resource " | grep "minor=\"${i}\"" | grep "Connected" > /dev/null 2>&1
+	    then
+     	    mensagemdrbd="$mensagemdrbd DRBD${i}=OK" 
+	    else
+	    (( $drbdstate == 0 )) && drbdstate=2 
+	    mensagemdrbd="$mensagemdrbd DRBD${i}=FAIL" 
+	    fi
+    done
+    resultados[$indice]="$drbdstate"
+    mensagens[$indice]="$mensagemdrbd"
+}
+
+
+
+
+
+testuptime(){
+
+    updays=$(uptime | sed -r 's/^.* ([0-9]+) day.*/\1/' | egrep '^[0-9]+$')
+
+    [ -z "$updays" ] && updays=0
+
+    if (( $updays > 0 ))
+    then
+	uptimestate=0
+	mensagemuptime="UPTIME=OK"
+    else
+	uptimestate=1
+	mensagemuptime="UP"
+    fi
+    resultados[$indice]="$uptimestate"
+    mensagens[$indice]="$mensagemuptime"
+}
+
+
+testinternet(){
+    if ping -c 1 -w 10 www.uol.com.br > /dev/null 2>&1 || ping -c 1 -w 10 www.google.com > /dev/null 2>&1 || ping -c 1 -w 10 registro.br  > /dev/null 2>&1
+    then
+	internetstate=0
+	mensageminternet="INTERNET=OK"
+    else
+	internetstate=2
+	mensageminternet="INTERNET=FAIL"
+    fi
+    resultados[$indice]="$internetstate"
+    mensagens[$indice]="$mensageminternet"
+}
+
+
+testupdate(){
+    updatestate=0
+
+    [ -f $diretoriopadrao/../update/updatenomeclient ] && updatenomeclient=$(cat $diretoriopadrao/../update/updatenomeclient) || updatenomeclient=0
+    [ -f $diretoriopadrao/../update/updatepacotes ] && updatepacotes=$(cat $diretoriopadrao/../update/updatepacotes) || updatepacotes=0
+
+    [ -f $diretoriopadrao/../update/updatenomeclient ] && (( $( find $diretoriopadrao/../update/updatenomeclient -mmin -540 | wc -l ) == 0 ))  && updatenomeclient=1 
+
+    updatestate=$(( $updatenomeclient + $updatepacotes))
+
+    (( $updatestate > 2 )) && updatestate=2
+
+    (( $updatestate == 0 )) && mensagemupdate="UPD=OK"
+    (( $updatestate == 1 )) && mensagemupdate="UPD=WARN"
+    (( $updatestate == 2 )) && mensagemupdate="UPD=FAIL"
+
+    resultados[$indice]="$updatestate"
+    mensagens[$indice]="$mensagemupdate"
+}
+
+testdrive(){
+    drivestate=0
+    if [[ "$bckdev" == "/dev/arcdrv1" ]] 
+	then
+	[ -h /dev/arcdrv1 ] || drivestate=1
+    fi
+    if echo "$bckdev" | egrep "^[0-9\.]+:/.*$" > /dev/null 2>&1
+	then
+	ipbckdev=$(echo "$bckdev" | cut -f 1 -d ":")
+	if ! ping -c 4 -W 10 $ipbckdev > /dev/null 2>&1
+	    then
+	    drivestate=1
+	fi
+    fi
+    (( $drivestate == 0 )) && mensagemdrive="DRIVEBCK=OK"
+    (( $drivestate == 1 )) && mensagemdrive="DRIVEBCK=WARN"
+    resultados[$indice]="$drivestate"
+    mensagens[$indice]="$mensagemdrive"
+}
+
+testgitetc(){
+    etcstate=0
+    (( $(git --git-dir=/etc/.git --work-tree=/etc status | egrep "working directory clean|nada a submeter, diretório de trabalho vazio" | wc -l) == 0 )) && etcstate=1
+    (( $etcstate == 0 )) && mensagemetc="ETC=OK"
+    (( $etcstate == 1 )) && mensagemetc="ETC=WARN"
+    resultados[$indice]="$etcstate"
+    mensagens[$indice]="$mensagemetc"
+}
+
+
+testgitnomeclient(){
+    nomeclientstate=0
+    (( $(git --git-dir=/nomeclient/.git --work-tree=/nomeclient diff FETCH_HEAD | wc -l) > 0 )) && nomeclientstate=1
+    (( $nomeclientstate == 0 )) && mensagemnomeclient="DALRAF=OK"
+    (( $nomeclientstate == 1 )) && mensagemnomeclient="DALRAF=WARN"
+    resultados[$indice]="$nomeclientstate"
+    mensagens[$indice]="$mensagemnomeclient"
+}
+
+testbackup(){
+
+    backupstate=$([ -f {{ nagiosbackupresult }} ] && cat {{ nagiosbackupresult }} || echo 0)
+    (( $backupstate == 0 )) && mensagembackup="BCK=OK"
+    (( $backupstate == 1 )) && mensagembackup="BCK=WARN"
+    (( $backupstate == 2 )) && mensagembackup="BCK=FAIL"
+    (( $backupstate == 4 )) && mensagembackup="BCK=EXEC" && backupstate=1
+    resultados[$indice]="$backupstate"
+    mensagens[$indice]="$mensagembackup"
+}
+
+
+testsync(){
+    
+    syncstate=0
+    {% for i in peerssync %}
+    (( $syncstate == 0 )) && syncstate=$([ -f {{ syncnagioserro }} ] && cat {{ syncnagioserro }}{{ i }} || echo 0)
+    {% endfor %}
+    (( $syncstate == 0 )) && mensagemsync="SYNC=OK"
+    (( $syncstate == 1 )) && mensagemsync="SYNC=FAIL"
+    resultados[$indice]="$syncstate"
+    mensagens[$indice]="$mensagemsync"
+}
+
+
+coletor(){
+    funcoes="$funcoes testuptime"
+
+    {% if inventory_hostname  in groups['proxmox'] %}funcoes="$funcoes testdiscos"{% endif %}
+
+    {% if inventory_hostname  in groups['syncservers'] %}funcoes="$funcoes testsync"{% endif %}
+
+    funcoes="$funcoes testinternet"
+
+    {% if useraid %}funcoes="$funcoes testraid"{% endif %}
+
+    {% if usedrbd %}$usedrbd && funcoes="$funcoes testdrbd"{% endif %}
+
+    {% if usebackup %} $usebackup && funcoes="$funcoes testbackup"{% endif %}
+
+    $useupdate && funcoes="$funcoes testupdate"
+
+    $usegitetc && funcoes="$funcoes testgitetc"
+
+    {% if monitornomeclient %}  $usegitnomeclient && funcoes="$funcoes testgitnomeclient" {% endif %}
+    indice=0
+    for i in $funcoes
+    do
+	indice=$(( $indice + 1 ))
+	eval $i $1
+    done
+    resultadofinal=0
+
+    for i in $(seq 1 $indice)
+    do
+	(( $resultadofinal < ${resultados[$i]} )) && resultadofinal=${resultados[$i]}
+	if [[ "$1" == "all" ]]
+	    then
+	    mensagemfinal="${mensagemfinal} ${mensagens[$i]}"
+	    else
+	    (( ${resultados[$i]} > 0 )) && mensagemfinal="${mensagemfinal} ${mensagens[$i]}"
+      	fi
+    done
+    [[ "$1" != "all" ]] && [[ "${mensagemfinal}zero" == "zero" ]] && mensagemfinal="OK"
+    nagiosoutput $resultadofinal "$mensagemfinal"
+}
+
+coletor $1
+
+
+
+
+
+

@@ -1,0 +1,5 @@
+#!/bin/bash
+export http_proxy=http://127.0.0.1:3127 
+ssh -Nf 10.137.0.1 -L 3127:127.0.0.1:3128
+apt-get $@
+kill -kill $(pgrep -f "ssh -Nf 10.137.0.1 -L 3127:127.0.0.1:3128")

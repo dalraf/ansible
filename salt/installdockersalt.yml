@@ -1,0 +1,22 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "cliente"
+    prompt: "Qual o cliente de destino?"
+    private: no
+  tasks:
+    - include_vars: hostnames.yml
+
+    - add_host:
+        name: "{{ hosts[cliente] }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  roles:
+    - dockersalt
+
+

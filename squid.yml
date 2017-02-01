@@ -1,0 +1,7 @@
+- hosts: squid
+  strategy: free
+  gather_facts: true
+  tags:
+    - squid
+  roles:
+    - squid

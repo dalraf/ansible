@@ -1,0 +1,73 @@
+- name: Instalar repositório webmin
+  apt_repository: repo='deb http://download.webmin.com/download/repository sarge contrib' state=present
+
+- name: Instalar key webmin
+  apt_key: url=http://www.webmin.com/jcameron-key.asc state=present
+
+- name: Define password do mysql
+  debconf: name='mysql-server' question='mysql-server/root_password' value='{{ passwordmysql }}' vtype='password'
+
+- name: Confirma password do mysql
+  debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{ passwordmysql }}' vtype='password'
+
+
+- name: Instalar pacotes do site
+  apt: name={{ item }} allow_unauthenticated=yes state=present
+  with_items: 
+    - "bind9"
+    - "webmin"
+    - "postfix"
+    - "dovecot-imapd"
+    - "dovecot-pop3d"
+    - "emacs-nox"
+    - "git"
+    - "metastore"
+    - "apache2"
+    - "mysql-server"
+    - "mysql-client"
+    - "php5"
+    - "php-pear"
+    - "php5-mysql"
+    - "iftop"
+    - "tcpdump"
+
+- name: Copiar arquivo .gitignore
+  copy: dest=/etc/.gitignore src=gitignore mode=0700 owner=root group=root
+
+- name: Rodar metastore 
+  command: /usr/bin/metastore -s creates=/etc/.metadata chdir=/etc
+
+- name: Rodar git init no /etc 
+  command: /usr/bin/git init creates=/etc/.git chdir=/etc
+
+- name: Definir permissões do diretorio git 
+  file: path=/etc/.git mode=0700 owner=root group=root
+
+- name: Criar chave de certificado
+  command: /usr/bin/openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -subj "/C=BR/ST=MinasGerais/L=BeloHorizonte/O=Dalraf/CN=www.nomeclientinf.com.br"  -out /etc/ssl/certs/mail.crt -keyout /etc/ssl/private/mail.key creates=/etc/ssl/private/mail.key chdir=/etc
+
+
+- name: Configurar main.cf
+  template: src=main.cf.j2 dest=/etc/postfix/main.cf mode=0644 owner=root group=root
+  notify: postfix
+
+- name: Configurar master.cf
+  template: src=master.cf.j2 dest=/etc/postfix/master.cf mode=0644 owner=root group=root
+  notify: postfix
+
+- name: Configurar ssl dovecot
+  template: src=10-ssl.conf.j2 dest=/etc/dovecot/conf.d/10-ssl.conf mode=0644 owner=root group=root
+  notify: dovecot
+
+- name: Configurar master dovecot
+  template: src=10-master.conf.j2 dest=/etc/dovecot/conf.d/10-master.conf mode=0644 owner=root group=root
+  notify: dovecot
+
+- name: Configurar auth dovecot
+  template: src=10-auth.conf.j2 dest=/etc/dovecot/conf.d/10-auth.conf mode=0644 owner=root group=root
+  notify: dovecot
+
+# Gerar senha com mkpasswd --method=SHA-512
+- name: Adcionar usuarios
+  user: name={{item}} shell=/bin/bash password="{{ userpassworddefault }}"
+  with_items: "{{ listadeusuarios }}"

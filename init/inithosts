@@ -1,0 +1,4 @@
+[inithosts]
+#192.168.0.154 ansible_user=nomeclient ansible_port=22 ansible_ssh_pass=123456 ansible_become=yes ansible_become_user=root ansible_become_method=sudo ansible_become_pass=123456 ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q root@srv-nomeclient"'
+10.137.3.10
+

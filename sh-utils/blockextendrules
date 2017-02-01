@@ -1,0 +1,12 @@
+#!/bin/bash
+whois -h whois.radb.net '!gAS32934' | tr ' ' '\n' | grep ^[0-9] > /tmp/facebook.ip
+
+for i in $(cat /tmp/facebook.ip)
+do 
+    iptables -t filter -A FORWARD -d $i -j DROP
+    iptables -t filter -A OUTPUT -d $i -j DROP
+done
+
+
+iptables -t filter -A FORWARD -d sslunblock.net -j DROP
+iptables -t filter -A OUTPUT -d sslunblock.net -j DROP

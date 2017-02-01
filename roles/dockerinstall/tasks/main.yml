@@ -1,0 +1,14 @@
+- name: Instalar python pip
+  apt: name=python-docker
+
+- name: Checar se docker está instalado
+  command: dpkg-query -l docker-engine
+  register: dockerpkg
+  failed_when: dockerpkg.rc > 1
+
+- name: Instalar docker
+  shell: curl -sSL https://get.docker.com/ | sh chdir=/etc
+  when: dockerpkg.rc == 1
+
+
+

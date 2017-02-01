@@ -1,0 +1,3 @@
+#!/bin/bash
+ansible -i boothosts boothosts -m raw -a "apt-get install -y python-minimal"
+ansible-playbook -i boothosts boot.yml

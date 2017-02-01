@@ -1,0 +1,58 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "hostdestino"
+    prompt: "Qual o host de destino?"
+    private: no
+  tasks:
+    - add_host:
+        name: "{{ hostdestino }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars_prompt:
+    - name: "sites"
+      prompt: "Qual o site a ser liberado"
+      private: no
+
+  tasks:
+
+    - name: Check if squid esta instalado
+      shell: dpkg-query -l squid
+      register: squidinstalled
+      ignore_errors: yes
+
+
+    - name: Check if squid3 esta instalado
+      shell: dpkg-query -l squid3
+      register: squidinstalled3
+      ignore_errors: yes
+
+    - name: Definir squid
+      set_fact: squidcmd="squid"
+      when: squidinstalled.rc == 0  and squidinstalled3.rc != 0 
+
+    - name: Definir squid3
+      set_fact: squidcmd="squid3"
+      when: squidinstalled.rc == 0  and squidinstalled3.rc == 0 
+
+    - name: Remover site
+      lineinfile: dest=/etc/{{squidcmd}}/sitesliberados line="{{item}}" state=absent
+      when: squidinstalled.rc == 0
+      with_items: "{{sites}}"
+      notify:
+        - squid
+        - commit
+
+  handlers:
+
+    - name: squid
+      command: "{{squidcmd}} -k reconfigure" 
+ 
+    - name: commit
+      shell: git add {{squidcmd}}/sitesliberados ; git commit -m "Alterado via ansible" chdir=/etc
+      ignore_errors: yes

@@ -1,0 +1,37 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "cliente"
+    prompt: "Qual o cliente de destino?"
+    private: no
+  tasks:
+    - include_vars: hostnames.yml
+
+    - add_host:
+        name: "{{ hosts[cliente] }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars_prompt:
+    - name: "address"
+      prompt: "Qual o ip ou rede? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "hostname"
+      prompt: "Qual o nome da cpu ? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "comandopowershell"
+      prompt: "Qual o comando a ser executado ?"
+      private: no
+
+
+
+  tasks:
+
+    - name: Executando comandos
+      shell: docker exec -i salt-master salt -C "{% if address != "" %} S@{{ address }} {% endif %} {% if hostname != "" %} G@host:{{ hostname }} {% endif %}" cmd.run "{{ comandopowershell }}" shell="powershell"
+      register: saltout
+    - debug: var=saltout.stdout_lines

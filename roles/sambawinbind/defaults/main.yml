@@ -1,0 +1,13 @@
+usebindredirect: false
+dominio: "nomeclient.local"
+dominiolocal: "nomeclient"
+servidordc: "srv01000000"
+servidorlinux: "lnx01000000"
+ipservidorlinux: "192.168.2.254"
+ipservidordc: "192.168.2.100"
+enderecoreverson: "2.168.192"
+usuario: "administrador"
+password: "123456"
+interface: "eth0"
+compartilhamentos: {share: "/home/share"}
+packagessamba: ["samba","krb5-user","ldb-tools","winbind","libnss-winbind","libpam-winbind"]

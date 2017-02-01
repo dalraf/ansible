@@ -1,0 +1,11 @@
+usecron: false
+destino: ['/mnt/pve/NAS']
+horariobackup: ["30 21",]
+scriptbackupnasnomeclient: "/nomeclientutils/scriptbackupnasnomeclient"
+cronbackupnasnomeclient: "/etc/cron.d/cronbackupnasnomeclient"
+rotatebackupnasnomeclient: "/etc/logrotate.d/rotatebackupnasnomeclient"
+lvmdevices: ["vm-101-disk-1","vm-100-disk-1","vm-100-disk-2","vm-100-disk-3","vm-100-disk-4"]
+prefixlvm: "/dev/pve"
+nasmountpoint: "/mnt/pve/NAS"
+vggroup: "pve"
+tamanholvmsnap: "100G"

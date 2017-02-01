@@ -1,0 +1,50 @@
+[global]
+security = ads
+realm = {{ dominio.upper() }}
+server string = %D
+nt acl support = yes
+password server = {{ ipservidordc }}
+workgroup = {{ dominiolocal.upper() }}
+interfaces = {{ interface }}
+bind interfaces only = yes
+idmap uid = 10000-20000
+idmap gid = 10000-20000
+allow trusted domains = No
+idmap config {{ dominiolocal }}: default = yes
+idmap config {{ dominiolocal }}: backend = rid
+idmap config {{ dominiolocal }}: range = 10000-20000
+idmap alloc config: range = 10000-20000
+winbind enum users = yes
+winbind enum groups = yes
+winbind offline logon = true
+winbind cache time = 3600
+template homedir = /home/%D/%U
+template shell = /bin/false
+client use spnego = yes
+client ntlmv2 auth = yes
+encrypt passwords = true
+winbind use default domain = yes
+restrict anonymous = 2
+admin users = administrador, nomeclient
+map acl inherit = Yes
+inherit acls = Yes
+debug level = 1
+
+
+{% for key, value in compartilhamentos.iteritems() %}
+
+[{{ key }}]
+comment = Arquivos on line
+path = {{ value }}
+read only = No
+guest ok = Yes
+browseable = yes
+Create Mask = 0664
+Directory mask = 0775
+hide files = /aquota.group/aquota.user/
+
+{% endfor %}
+  
+
+
+	

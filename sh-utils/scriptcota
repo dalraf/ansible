@@ -1,0 +1,29 @@
+#!/bin/bash
+diretoriobase="/home/ascicred"
+diretoriosetores="${diretoriobase}/SETORES-/"
+diretoriousuario="${diretoriobase}/USUARIO-/"
+
+echo "Cotas Definidas em MB"
+
+IFS="," 
+
+for m in $diretoriosetores $diretoriousuario
+do
+    j=$(echo $m | cut -f 1 -d "-")
+    n=$(echo $m | cut -f 2 -d "-")
+    for i in $(find $j -maxdepth 1 -printf "%f,")
+    do
+	gruporegxp=$(echo "$i" | tr '[:upper:]' '[:lower:]' | sed  's/^/grp_/' )
+	if getent group | egrep "$gruporegxp" >/dev/null 2>&1 
+	then
+	    grupo=$(getent group | egrep "$gruporegxp" | cut -f 3 -d ":")
+	    echo "Qual o valo de limite para $i ?"
+	    read  limitemb
+	    limite=$(( $limitemb * 1024 ))
+	    exibe="$exibe $(echo -e "chgrp -R  $grupo \"$j/${i}\"; chmod -R  g+s \"$j/${i}\" ; setquota -g $grupo  $limite $limite 0 0 /")\n"
+	fi
+    done
+done
+echo -e $exibe > /opt/execlista
+
+unset IFS

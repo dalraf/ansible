@@ -1,0 +1,10 @@
+- hosts: [proxmox]
+  gather_facts: false
+  strategy: free
+  tags:
+    - atualizacache
+  tasks:
+    - name: Atualiza pacotes
+      apt: update_cache=yes
+      ignore_errors: yes
+ 

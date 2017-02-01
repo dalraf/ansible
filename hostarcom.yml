@@ -1,0 +1,111 @@
+- hosts: 127.0.0.1
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars:
+    hostnomeclient:
+      srv-nomeclient-sede2:
+        ipaddress: 10.137.3.14
+        descricao: "Servidor Linux 1234 sede 2"
+        servicenomeclient: true
+        status: true
+      srv-nomeclient:
+        ipaddress: 10.137.3.6
+        descricao: "Servidor Linux Medshape"
+        servicenomeclient: false
+        status: true
+      srv-nomeclient-manager:
+        ipaddress: 10.137.3.10
+        descricao: "Servidor nomeclient Manager"
+        servicenomeclient: false
+        status: true
+      srv-nomeclient-cloud02:
+        ipaddress: 10.137.2.66
+        descricao: "Servidor nomeclient cloud02"
+        servicenomeclient: true
+        status: true
+      srv-nomeclient-pac02-cloud01:
+        ipaddress: 10.137.3.18
+        descricao: "Servidor nomeclient cloud01 PA02 Gumercinda"
+        servicenomeclient: true
+        status: true
+      srv-nomeclient-pac01-cloud01:
+        ipaddress: 10.137.3.22
+        descricao: "Servidor nomeclient cloud01 PA01"
+        servicenomeclient: true
+        status: true
+      srv-cecref-cloud01:
+        ipaddress: 10.137.3.26
+        descricao: "Servidor cecref cloud01"
+        servicenomeclient: true
+        status: true
+      srv-cecref-sede:
+        ipaddress: 10.137.3.30
+        descricao: "Servidor cecref sede"
+        servicenomeclient: false
+        status: false
+      srv-crediuna-pac01:
+        ipaddress: 10.137.3.34
+        descricao: "Servidor crediuna pac01"
+        servicenomeclient: false
+        status: false
+      srv-nomeclient-pac01-fs:
+        ipaddress: 10.137.3.38
+        descricao: "servidor nomeclient pac01 file system"
+        servicenomeclient: true
+        status: true
+
+
+
+
+  tasks:
+
+    - name: Add nagios
+      template: src=templates/nagiosnomeclient.j2 dest=/etc/nagios3/hosts/{{ item.key }}.cfg mode=0644 owner=root group=root
+      with_dict: "{{ hostnomeclient }}"
+      when: ( {{ item.value.status }} == true )
+      notify:
+        - nagios
+        - commitnagios
+
+    - name: Remove nagios
+      file: path=/etc/nagios3/hosts/{{ item.key }}.cfg state=absent
+      with_dict: "{{ hostnomeclient }}"
+      when: ( {{ item.value.status }} == false )
+      notify:
+        - nagios
+        - commitnagios
+
+
+    - name: Add bind
+      lineinfile: dest=/var/lib/bind/nomeclientinf.remote.hosts regexp="{{ item.key }}.nomeclientinf.remote" line="{{ item.key }}.nomeclientinf.remote	A	{{ item.value.ipaddress }}" state=present
+      when: ( {{ item.value.status }} == true )
+      with_dict: "{{ hostnomeclient }}"
+      notify:
+        - bind
+        - commitbind
+
+    - name: Remove bind
+      lineinfile: dest=/var/lib/bind/nomeclientinf.remote.hosts line="{{ item.key }}.nomeclientinf.remote	A	{{ item.value.ipaddress }}" state=absent
+      when: ( {{ item.value.status }} == false )
+      with_dict: "{{ hostnomeclient }}"
+      notify:
+        - bind
+        - commitbind
+
+
+  handlers:
+    - name: nagios
+      service: name=nagios3 state=reloaded
+
+    - name: commitnagios
+      shell: git add nagios3/hosts ; git commit -m "Adicionado nagios pelo ansible" chdir=/etc
+      ignore_errors: yes
+
+    - name: bind
+      service: name=bind9 state=reloaded
+
+    - name: commitbind
+      shell: git add nomeclientinf.remote.hosts ; git commit -m "Adicionado bind pelo ansible" chdir=/var/lib/bind
+      ignore_errors: yes

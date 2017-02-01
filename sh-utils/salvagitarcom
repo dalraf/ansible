@@ -1,0 +1,2 @@
+#!/bin/bash
+git push 10.137.0.1:/home/prj/base master

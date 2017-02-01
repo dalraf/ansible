@@ -1,0 +1,4 @@
+
+#Adicionado pela Dalraf
+* * * * * 	root 	/nomeclient/proxmox/watchdog >/dev/null 2>&1 
+#

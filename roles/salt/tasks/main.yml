@@ -1,0 +1,31 @@
+- name: Instalar repositório salt
+  apt_repository: repo='ppa:saltstack/salt' state=present
+
+- name: Instalar pacotes do salt
+  apt: name={{ item }} allow_unauthenticated=yes state=present
+  with_items: 
+    - "salt-api"
+    - "salt-cloud"
+    - "salt-master"
+    - "salt-minion"
+    - "salt-ssh"
+    - "salt-syndic"
+
+- name: Configura interface do master
+  lineinfile: dest=/etc/salt/master  regexp="interface{{ ":" }}" line="interface{{ ":" }} {{ saltaddress }}" state=present
+  notify: 
+    - salt-master
+
+- name: Aumenta o timeout
+  lineinfile: dest=/etc/salt/master  regexp="timeout{{ ":" }}" line="timeout{{ ":" }} 60" state=present
+  notify: 
+    - salt-master
+
+- name: Criar diretorio salt
+  file: path=/srv/salt state=directory mode=0755 owner=root group=root
+
+- name: Configura interface do minion
+  lineinfile: dest=/etc/salt/minion  regexp="master{{ ":" }}" line="master{{ ":" }} {{ saltaddress }}" state=present
+  notify: 
+    - salt-minion
+

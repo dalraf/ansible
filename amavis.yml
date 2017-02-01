@@ -1,0 +1,7 @@
+- hosts: [amavis]
+  gather_facts: false
+  strategy: free
+  tags:
+    - amavis
+  roles:
+    - amavis

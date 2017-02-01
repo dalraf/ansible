@@ -1,0 +1,11 @@
+#!/bin/bash
+cp /base/proxmox/examples/r0.res /etc/drbd.d
+emacs /etc/drbd.d/r0.res
+drbdadm create-md r0
+/etc/init.d/drbd restart
+drbdadm -- --overwrite-data-of-peer primary all
+cp /base/proxmox/examples/lvm.conf /etc/lvm/lvm.conf
+emacs /etc/lvm/lvm.conf
+pvcreate /dev/drbd0
+vgcreate vg0 /dev/drbd0
+

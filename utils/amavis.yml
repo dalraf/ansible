@@ -1,0 +1,4 @@
+- hosts: [amavis]
+  strategy: free
+  roles:
+    - amavis

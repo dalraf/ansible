@@ -1,0 +1,7 @@
+- hosts: dockerservers
+  strategy: free
+  gather_facts: false
+  tags:
+    - dockerservers
+  roles:
+    - dockerinstall

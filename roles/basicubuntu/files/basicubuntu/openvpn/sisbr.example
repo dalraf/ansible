@@ -1,0 +1,20 @@
+client
+port 1195
+dev tap2
+proto udp
+remote coopsefatm.dnsalias.net
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+ca /etc/openvpn/sisbr/ca.crt
+cert /etc/openvpn/sisbr/certificate.crt
+key /etc/openvpn/sisbr/keyfile.key
+ns-cert-type server
+comp-lzo
+verb 3
+ping 15
+ping-restart 300
+persist-key
+route-up "/sbin/ip route del 172.16.0.0/16 via 192.168.16.252"
+#reneg-sec 18000

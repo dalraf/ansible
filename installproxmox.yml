@@ -1,0 +1,30 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "hostdestino"
+    prompt: "Qual o host de destino?"
+    private: no
+  tasks:
+    - add_host:
+        name: "{{ hostdestino }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  gather_facts: true
+  strategy: free
+  vars_prompt:
+    - name: "ansible_port"
+      prompt: "Qual a porta ssh?"
+      private: no
+    - name: "ansible_ssh_pass"
+      prompt: "Qual a senha do usuario root?"
+      private: no
+  tags:
+    - atualizacache
+  tasks:
+    - name: Atualiza pacotes
+      apt: update_cache=yes
+      ignore_errors: yes
+  roles:
+    - proxmox
+    - nagios

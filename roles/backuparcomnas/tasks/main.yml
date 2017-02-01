@@ -1,0 +1,28 @@
+- name: Definir script de backup NAS nomeclient
+  template: src=scriptbackupnasnomeclient.j2 dest="{{scriptbackupnasnomeclient}}" mode=0755 owner=root group=root
+  tags: 
+    - scriptbackupnasnomeclient
+
+- name: Definir cron para o backup
+  template: src=cronbackupnasnomeclient.j2 dest="{{cronbackupnasnomeclient}}" mode=0644 owner=root group=root
+  register: cronbackupnasnomeclientresult
+  notify: cron
+  when: ( usecron == true )
+
+- name: Remover cron para o backup
+  file: path="{{cronbackupnasnomeclient}}" state=absent
+  notify: cron
+  when: ( usecron == false )
+
+- name: Definir rotate de log de backup
+  template: src=rotatebackunasnomeclient.j2 dest="{{rotatebackupnasnomeclient}}" mode=0644 owner=root group=root
+  register: rotatebackupnasnomeclientresult
+
+- name: Definir script para ver log de backup
+  template: src=viewbackuplognasnomeclient.j2 dest=/usr/bin/viewbackuplognasnomeclient mode=0755 owner=root group=root
+
+- name: Verificar alteração de arquivo
+  include: libs/commit.yml result={{ item.result }} arquivo={{ item.arquivo }}
+  with_items:
+    - { result: "{{ cronbackupnasnomeclientresult }}" , arquivo: "{{cronbackupnasnomeclient}}" }
+    - { result: "{{ rotatebackupnasnomeclientresult}}" , arquivo: "{{rotatebackupnasnomeclient}}" }

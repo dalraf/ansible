@@ -1,0 +1,9 @@
+- hosts: srv-nomecliente-pac
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  tasks:
+    - name: Corrigindo permissão dos arquivos do sync
+      shell: setfacl -R --mask -m group:publico:rwx /home/sync ; setfacl -R -m default:group:publico:rwx /home/sync chdir=/home
+      ignore_errors: yes

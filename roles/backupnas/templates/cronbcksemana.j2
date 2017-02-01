@@ -1,0 +1,5 @@
+{% for i in horariobackup %}
+{%for key, value in diassemanas.iteritems() %}
+{{ i }} * * {{ key }}     root    {{ scriptbcklocal }} "{{ value.nome }}" "{{ value.arquivos }}"
+{% endfor %}
+{% endfor %}

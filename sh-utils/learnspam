@@ -1,0 +1,7 @@
+#!/bin/bash
+diretoriospam="/home/base/Maildir/.SPAM/cur"
+userspam="amavis"
+setfacl -m "u:${userspam}:rx" ${diretoriospam}*
+su -s /bin/bash -c "sa-learn --spam  $diretoriospam" "$userspam"
+
+

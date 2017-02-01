@@ -1,0 +1,41 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "cliente"
+    prompt: "Qual o cliente de destino?"
+    private: no
+  tasks:
+    - include_vars: hostnames.yml
+
+    - add_host:
+        name: "{{ hosts[cliente] }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars_prompt:
+    - name: "address"
+      prompt: "Qual o ip ou rede? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "hostname"
+      prompt: "Qual o nome da cpu ? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "password"
+      prompt: "Qual o password ?"
+      private: no
+
+
+  tasks:
+
+    - name: Fazendo download do tighvnc
+      shell: docker exec -i salt-master salt -C "{% if address != "" %} S@{{ address }} {% endif %} {% if hostname != "" %} G@host:{{ hostname }} {% endif %}" cmd.run 'Invoke-WebRequest -Uri http://www.7-zip.org/a/7z1602-x64.msi -OutFile c:\vnc.msi'   shell="powershell"
+      register: saltout
+    - debug: var=saltout.stdout_lines
+
+    - name: Executando instalação do tightvnc
+      shell: docker exec -i salt-master salt -C "{% if address != "" %} S@{{ address }} {% endif %} {% if hostname != "" %} G@host:{{ hostname }} {% endif %}" cmd.run 'msiexec /i "c:\vnc.msi" /quiet /norestart ADDLOCAL="Server,Viewer" VIEWER_ASSOCIATE_VNC_EXTENSION=1 SERVER_REGISTER_AS_SERVICE=1 SERVER_ADD_FIREWALL_EXCEPTION=1 VIEWER_ADD_FIREWALL_EXCEPTION=1 SERVER_ALLOW_SAS=1 SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=PASSWORD SET_USECONTROLAUTHENTICATION=1 VALUE_OF_USECONTROLAUTHENTICATION=1 SET_CONTROLPASSWORD=1 VALUE_OF_CONTROLPASSWORD={{ password }}'   shell="powershell"
+      register: saltout
+    - debug: var=saltout.stdout_lines

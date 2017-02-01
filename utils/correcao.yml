@@ -1,0 +1,8 @@
+- hosts: proxmox
+  strategy: free
+  tasks:
+    - file: path=/etc/openvpn/openvpn state=absent
+    - file: path=/etc/nagios/nagios state=absent
+    - file: path=/etc/ssh/ssh state=absent
+    - file: path=/etc/stunnel/stunnel state=absent
+    - command: /bin/bash -c "git add .; git commit -a -m \"Removido lixo\"" chdir=/etc 

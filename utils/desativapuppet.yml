@@ -1,0 +1,11 @@
+- hosts: servidores
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars:
+    puppetpackages: ["puppet","puppet-common","facter","hiera"]
+  tasks:
+    - name: remove pacote puppet
+      apt: name={{ item }} state=absent
+      with_items: "{{puppetpackages}}"

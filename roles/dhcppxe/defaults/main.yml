@@ -1,0 +1,22 @@
+clonezilla: true
+syscd: true
+ipinterfacelocal: "192.168.0.254"
+useproxy: true
+portaweb: ""
+ipproxy: "192.168.0.254"
+subnet: "192.168.0.0"
+mascara: "255.255.255.0"
+rangeinicio: "192.168.0.100"
+rangefim: "192.168.0.200"
+dnsserver: "192.168.0.254"
+nomedodominio: "nomeclientinf.local"
+dnssearch: "nomeclientinf.local  nomeclientinf.remoto"
+roteador: "192.168.0.254"
+redenfs: "192.168.0.0/24"
+versao: "1"
+execfile: "/opt/execsucc{{1}}"
+execfileclone: "{{execfile}}clone"
+execfilerescue: "{{execfile}}rescue"
+packagespxe: ["tftpd-hpa", "isc-dhcp-server", "nfs-kernel-server", "apache2" ]
+packageswpad: ["apache2"]
+enablepxe: true

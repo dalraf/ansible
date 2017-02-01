@@ -1,0 +1,47 @@
+- name: Instalar pacotes
+  apt: name={{ item }} state=present allow_unauthenticated=yes
+  with_items: "{{packagesnagios}}"
+  tags:
+    - nagios
+
+- name: Definir arquivo do sudoers
+  template: src=sudoers.j2 dest=/etc/sudoers mode=0440 owner=root group=root
+  register: sudoersfile
+  notify:
+    - nrpe
+  tags:
+    - nagios
+
+- name: Definir script nagiosnomeclient
+  template: src=nagiosnomeclient.j2 dest=/nomeclientutils/nagiosnomeclient mode=0755 owner=root group=root
+  notify:
+    - nrpe
+  tags:
+    - nagios
+
+
+- name: Definir nrpe.cfg
+  template: src=nrpe.cfg.j2 dest=/etc/nagios/nrpe.cfg mode=0644 owner=root group=root
+  register: nrpecfgfile
+  notify:
+    - nrpe
+  tags:
+    - nagios
+
+- name: Definir nrpe_local.cfg
+  template: src=nrpe_local.cfg.j2 dest=/etc/nagios/nrpe_local.cfg mode=0644 owner=root group=root
+  register: nrpecfglocalfile
+  notify:
+    - nrpe
+  tags:
+    - nagios
+
+
+- name: Verificar alteração de arquivo
+  include: libs/commit.yml result={{ item.result }} arquivo={{ item.arquivo }}
+  with_items:
+    - { result: "{{ sudoersfile }}" , arquivo: "/etc/sudoers" }
+    - { result: "{{ nrpecfgfile }}" , arquivo: "/etc/nagios/nrpe.cfg" }
+    - { result: "{{ nrpecfglocalfile }}" , arquivo: "/etc/nagios/nrpe_local.cfg" }
+  tags:
+    - nagios

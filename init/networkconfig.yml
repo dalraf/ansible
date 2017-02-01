@@ -1,0 +1,20 @@
+- hosts: inithosts
+  strategy: free
+  gather_facts: true
+  tags:
+    - network
+  roles:
+  - role: ansible-network-interfaces
+    network_manage_devices: yes
+    network_interfaces:
+    - device: eth0
+      auto: true
+      family: inet
+      method: static
+      address: 192.168.0.224
+      netmask: 255.255.255.0
+      gateway: 192.168.0.254
+      dns_search: "nomeclient.local"
+      nameservers:
+        - 192.168.0.254
+

@@ -1,0 +1,41 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "cliente"
+    prompt: "Qual o cliente de destino?"
+    private: no
+  tasks:
+    - include_vars: hostnames.yml
+
+    - add_host:
+        name: "{{ hosts[cliente] }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars_prompt:
+    - name: "address"
+      prompt: "Qual o ip ou rede? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "hostname"
+      prompt: "Qual o nome da cpu ? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "localizacaoagent"
+      prompt: "Aonde está o arquivo agent msi do kaspersky ?"
+      private: no
+    - name: "servidorkaspersky"
+      prompt: "Qual o endereço do servidor kasperky ?"
+      private: no
+
+
+
+  tasks:
+
+    - name: Executando comandos
+      shell: docker exec -i salt-master salt -C "{% if address != "" %} S@{{ address }} {% endif %} {% if hostname != "" %} G@host:{{ hostname }} {% endif %}" cmd.run 'msiexec.exe /i "{{ localizacaoagent }}" /qn /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="{{ servidorkaspersky }}" DONT_USE_ANSWER_FILE=1'
+      register: saltout
+    - debug: var=saltout.stdout_lines
+

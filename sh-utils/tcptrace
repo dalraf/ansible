@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+function capture(){
+tcpdump -i eth2 -s 65535 -w /opt/teste.cap host app.neus.com.br
+}
+
+
+function stat(){
+tcptrace -rl /opt/teste.cap
+}
+
+
+eval ${1} ${2} ${3}
+

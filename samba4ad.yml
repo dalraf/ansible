@@ -1,0 +1,10 @@
+- hosts: [samba4ad]
+#  strategy: free
+  gather_facts: true
+  tags:
+    - samba4ad
+  roles:
+    - samba4ad
+
+
+

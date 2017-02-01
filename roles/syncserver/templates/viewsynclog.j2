@@ -1,0 +1,2 @@
+#!/bin/bash
+( for i in $(ls -tr {{ filelogsync }}*gz 2>/dev/null ) ; do zcat $i ; done ; [ -f {{ filelogsync }}.1 ] && cat {{ filelogsync }}.1 ; [ -f {{ filelogsync }} ] && cat {{ filelogsync }} )

@@ -1,0 +1,25 @@
+- hosts: srv-nomecliente srv-nomecliente-pac srv-nomecliente-pac1 srv-nomecliente-pac3
+  strategy: free
+  gather_facts: false
+  tags:
+    - delecaoprogramada
+  tasks:
+    - name: Definir delecao programada
+      cron: name="delecaoprogramada1" weekday="5" minute="59" hour="23"  job="rm -r /home/publico/* 2>&1 | logger -t DELECAO" cron_file="delecaoprogramada1" user=root state=present
+      notify:
+        - cron
+        - commitdelecao1
+    - name: Definir delecao programada
+      cron: name="delecaoprogramada2" weekday="5" minute="59" hour="23"  job="rm -r /home/sync/* 2>&1 | logger -t DELECAO" cron_file="delecaoprogramada2" user=root state=present
+      notify:
+        - cron
+        - commitdelecao2
+  handlers:
+    - name: cron
+      service: name=cron state=restarted
+    - name: commitdelecao1
+      shell: git add /etc/cron.d/delecaoprogramada1 ; git commit -m "Alterado pelo ansible" chdir=/etc
+      ignore_errors: yes
+    - name: commitdelecao2
+      shell: git add /etc/cron.d/delecaoprogramada2 ; git commit -m "Alterado pelo ansible" chdir=/etc
+      ignore_errors: yes

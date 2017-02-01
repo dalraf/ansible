@@ -1,0 +1,7 @@
+ansible_user: nomeclient
+ansible_ssh_pass: 123456
+ansible_python_interpreter: /usr/local/bin/python
+ansible_become: yes
+ansible_become_user: root
+ansible_become_method: sudo
+ansible_become_pass: 123456

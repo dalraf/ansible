@@ -1,0 +1,68 @@
+
+#- name: remove puppet gem
+#  gem: name=puppet state=absent
+#
+- name: Remover pacote puppet
+  package: name={{ item }} state=absent
+  with_items: "{{puppetpackages}}"
+
+- name: Instalar pacotes basicos ubuntu 10.04
+  apt: name={{ item }} state=present
+  with_items: "{{packagesbasic1004}}"
+  when: (( ansible_distribution_version == "10.04" ))
+
+- name: Instalar pacotes basicos ubuntu 14.04
+  apt: name={{ item }} state=present
+  with_items: "{{packagesbasic1404}}"
+  when: (( ansible_distribution_version == "14.04" ))
+
+- name: Instalar pacotes basicos ubuntu 16.04
+  apt: name={{ item }} state=present
+  with_items: "{{packagesbasic1604}}"
+  when: (( ansible_distribution_version == "16.04" ))
+
+- name: Verificar status serviço cron
+  service: name=cron state=started enabled=yes
+
+- name: Verificar status serviço ssh
+  service: name=ssh state=started enabled=yes
+
+- name: Copiar arquivos basicos do openvpn
+  copy: dest=/etc/openvpn src=basicubuntu/openvpn/ mode=0644 owner=root group=root force=no
+
+- name: Copiar arquivos basicos do ssh
+  copy: dest=/etc/ssh src=basicubuntu/ssh/ mode=0644 owner=root group=root
+  notify: ssh
+
+- name: Copiar arquivos basicos do stunnel
+  copy: dest=/etc/stunnel src=basicubuntu/stunnel/ mode=0644 owner=root group=root
+
+- name: Adicionar linha do fortinethack no rc.local
+  lineinfile: dest=/etc/rc.local regexp="^#screen -d -m bash" insertafter="# By default this script does nothing." line="#screen -d -m bash -c \"while true ; do smbclient  //192.168.72.2/c$ log1234@sco -U administrador -W scentrooeste ; sleep 5 ; done\""
+
+- name: Copiar arquivo ntp
+  copy: dest=/etc/default/ntp src=basicubuntu/ntp mode=0644 owner=root group=root
+
+- name: Copiar arquivo .gitignore
+  copy: dest=/etc/.gitignore src=basicubuntu/basicubuntugitignoreetc mode=0700 owner=root group=root
+
+- name: Rodar metastore 
+  command: /usr/bin/metastore -s creates=/etc/.metadata chdir=/etc
+
+- name: Rodar git init no /etc 
+  command: /usr/bin/git init creates=/etc/.git chdir=/etc
+
+- name: Definir permissões do diretorio git 
+  file: path=/etc/.git mode=0700 owner=root group=root
+
+- name: Ativar o roteamento
+  lineinfile: dest=/etc/sysctl.conf regexp="#net.ipv4.ip_forward=1" line="net.ipv4.ip_forward=1" state=present
+  notify: sysctl
+  tags:
+    - sysctl
+
+- name: Configurar git
+  shell: git config --global user.email "nomeclient@nomeclientinf.com.br" ; git config --global user.name "Dalraf" ; git add . ; git commit -a -m "commit inicial" chdir=/etc
+
+
+

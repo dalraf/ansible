@@ -1,0 +1,8 @@
+- hosts: wpadwebservers
+  strategy: free
+  gather_facts: false
+  tags:
+    - wpadwebservers
+  roles:
+    - dockerinstall
+    - dockerwpadwebserver

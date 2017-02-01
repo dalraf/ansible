@@ -1,0 +1,4 @@
+- hosts: backupnas
+  strategy: free
+  roles:
+    - backupnas

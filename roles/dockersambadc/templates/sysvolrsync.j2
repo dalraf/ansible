@@ -1,0 +1,2 @@
+#!/bin/bash
+/usr/bin/rsync -rvt --delete-after rsync://{{ ipservidordc }}/sysvol/ {{ sysvol }} >> /var/log/rsyncsysvol.log 2>&1

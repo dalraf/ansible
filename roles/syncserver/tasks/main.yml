@@ -1,0 +1,34 @@
+- name: Instalar unison
+  apt: name=unison state=present
+
+- name: Criar diretórios de sync
+  file: path={{ item }} state=directory
+  with_items: "{{ diretoriosyncnomeclient }}"
+
+
+- name: Definir script de syncronismo
+  template: src=syncnomeclient.j2 dest={{diretoriobase}}/{{ item }} mode=0777 owner=root group=root
+  with_items: "{{ peerssync }}"
+
+- name: Definir script metasave
+  template: src=metasave.j2 dest={{ scriptmetasave }} mode=0777 owner=root group=root
+
+- name: Definir cron sync
+  template: src=synccronnomeclient.j2 dest={{ filecronsyncnomeclient }} mode=0644 owner=root group=root
+  register: resultcronsync
+  notify:
+    - cron
+
+- name: Definir rotate de log de syncronismo
+  template: src=synclogrotate.j2 dest=/etc/logrotate.d/synclog mode=0644 owner=root group=root
+  register: synclogrotate
+
+- name: Definir script para ver log de sync
+  template: src=viewsynclog.j2 dest=/usr/bin/viewsynclog mode=0755 owner=root group=root
+
+- name: Verificar alteração de arquivo
+  include: libs/commit.yml result={{ item.result }} arquivo={{ item.arquivo }}
+  with_items:
+    - { result: "{{ resultcronsync }}" , arquivo: "{{ filecronsyncnomeclient }}" }
+    - { result: "{{ synclogrotate }}" , arquivo: "/etc/logrotate.d/synclog" }
+

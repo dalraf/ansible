@@ -1,0 +1,11 @@
+FROM ubuntu:16.04
+MAINTAINER examples@docker.com
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && apt-get install -y {% for i in packagescron %} {{ i }} {% endfor %}
+
+ADD cronsysvolrsync /etc/crontab
+
+ADD sysvolrsync /etc/sysvolrsync
+

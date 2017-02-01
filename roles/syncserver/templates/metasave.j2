@@ -1,0 +1,12 @@
+#/bin/bash
+[ -d $(dirname {{ metafile }}) ] || mkdir $(dirname {{ metafile }})
+if [[ $1 == "save" ]]
+then
+{% for j in diretoriosyncnomeclient %}
+    nice -n 19 getfacl -R -n -p -P {{ j }}  > {{ metafile }}
+    logger -t SYNCDALRAF "Meta Salvo"
+{% endfor %}
+else
+    nice -n 19 setfacl --restore={{ metafile }} > /dev/null 2>&1
+    logger -t SYNCDALRAF "Meta Aplicado"
+fi

@@ -1,0 +1,16 @@
+dbhome /var/lib/squidguard/db
+logdir /var/log/squidguard
+
+{% for i in squidguarddomains %}
+dest {{ i }} {
+        domainlist {{ i }}/domains
+	urllist {{ i }}/urls
+}
+{% endfor %}
+
+acl {
+        default {
+                pass {% for i in squidguarddomains %}!{{ i }} {% endfor %} all
+		redirect {{ squidguardsiteblock }}
+        }
+}

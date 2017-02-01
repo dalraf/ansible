@@ -1,0 +1,19 @@
+FROM ubuntu:16.04
+MAINTAINER Dalraf
+
+# Add pip and salt
+
+RUN apt-get update && apt-get install -y python-pip
+RUN pip install salt
+
+# Add master salt
+ADD master /etc/salt/master
+
+
+# Ports
+
+EXPOSE 4505 4506
+
+# Run Command
+
+CMD "/usr/local/bin/salt-master"

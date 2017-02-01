@@ -1,0 +1,5 @@
+- hosts: proxmox
+  strategy: free
+  tasks:
+    - name: commit backup nas
+      shell: git add cron.d/backupnas; git commit -m "Adicionado backup nas" ; chdir=/etc

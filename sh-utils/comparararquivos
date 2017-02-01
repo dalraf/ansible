@@ -1,0 +1,2 @@
+#!/bin/bash
+rsync -rvnc  ${1}/* $2 | egrep -v "^skipping" | tail -n +2 | head -n -2

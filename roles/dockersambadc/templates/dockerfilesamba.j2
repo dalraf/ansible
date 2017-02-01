@@ -1,0 +1,14 @@
+FROM ubuntu:16.04
+MAINTAINER examples@docker.com
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && apt-get install -y {% for i in packagessamba %} {{ i }} {% endfor %} && apt-get clean
+
+RUN rm /etc/samba/smb.conf
+
+ADD nsswitch.conf /etc/nsswitch.conf
+
+ADD krb5.conf /etc/krb5.conf
+
+ADD dnscorrect /dnscorrect

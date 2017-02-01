@@ -1,0 +1,7 @@
+monitornomeclient: false
+usedisco:  false
+usedrbd: false
+useraid: true
+usebackup:  true
+packagesnagios: [ "nagios-nrpe-server", "sudo" ]
+peerssync: []

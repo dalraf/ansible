@@ -1,0 +1,40 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+  - name: "cliente"
+    prompt: "Qual o cliente de destino?"
+    private: no
+  tasks:
+    - include_vars: hostnames.yml
+
+    - add_host:
+        name: "{{ hosts[cliente] }}"
+        groups: hostdestino
+
+- hosts: hostdestino
+  strategy: free
+  serial: 100%
+  no_log: False
+  gather_facts: False
+  vars_prompt:
+    - name: "address"
+      prompt: "Qual o ip ou rede? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "hostname"
+      prompt: "Qual o nome da cpu ? (deixe nulo ser não for o caso)"
+      private: no
+    - name: "nomedoarquivo"
+      prompt: "Qual o nome do arquivo que está em /srv/salt ?"
+      private: no
+    - name: "diretoriodestino"
+      prompt: "Qual o diretorio destino do arquivo ?"
+      private: no
+
+
+
+  tasks:
+
+    - name: Copiando arquivos
+      shell: docker exec -i salt-master salt -C "{% if address != "" %} S@{{ address }} {% endif %} {% if hostname != "" %} G@host:{{ hostname }} {% endif %}" cp.get_file salt://{{ nomedoarquivo }} "{{diretoriodestino}}{{nomedoarquivo}}"
+      register: saltout
+    - debug: var=saltout.stdout_lines
