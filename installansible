@@ -4,6 +4,7 @@ apt-get -y install python-pip
 apt-get -y install python-dev
 apt-get -y install libffi-dev
 apt-get -y install redis-server
+apt-get -y install sshpass
 apt-get install libssl-dev
 pip install redis
 pip install ansible
